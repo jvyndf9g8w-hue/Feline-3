@@ -85,6 +85,24 @@ svg#board{display:block;width:100%;height:auto;max-height:76vh;touch-action:none
 .lab{font-family:var(--disp);font-weight:700;text-anchor:middle;pointer-events:none}
 .ballg .body{fill:var(--ball);stroke:#1b1b1b;stroke-width:.1}
 .deck{display:grid;gap:12px}
+h2{font:700 26px/1 var(--disp);letter-spacing:.02em;text-transform:uppercase;margin:0}
+.lib{display:grid;gap:12px}
+.libhead{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;justify-content:space-between}
+.libhead .hint{min-height:0}
+input[type="text"],input[type="search"]{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font:inherit;color:inherit;min-width:0}
+#titleIn{flex:1 1 240px}
+.liblist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.item{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.item[aria-current="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.item .txt{min-width:0;flex:1 1 220px}
+.item .t{font-weight:600;overflow-wrap:anywhere}
+.item .m{color:var(--muted);font-size:14px}
+.item .acts{display:flex;flex-wrap:wrap;gap:8px}
+.item .tag{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:10px;background:var(--accent);color:var(--on-accent);font:600 12px/1.4 var(--body);letter-spacing:.04em;text-transform:uppercase;vertical-align:2px}
+.btn.armed{border-color:#c0392b;color:#c0392b;font-weight:600}
+.empty{color:var(--muted);padding:8px 2px}
+details.backup summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600}
+details.backup{display:grid;gap:8px}
 .steps{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .chip{min-width:44px;min-height:44px;border-radius:22px;border:1px solid var(--line);background:var(--panel);font:600 18px/1 var(--disp);letter-spacing:.02em}
 .chip[aria-current="step"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
@@ -174,6 +192,36 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <span><i class="dot b"></i>Ballon (dépose-le sur une joueuse pour qu'elle le porte)</span>
     </div>
   </section>
+  <section class="panel lib" aria-label="Bibliothèque d'actions">
+    <div class="libhead">
+      <h2>Bibliothèque</h2>
+      <p class="hint" id="libCount"></p>
+    </div>
+    <div class="field">
+      <label class="lbl" for="titleIn">Titre de l'action</label>
+      <div class="row">
+        <input id="titleIn" type="text" maxlength="80" placeholder="Ex. : Croisé DC / ARG sur 0-6" autocomplete="off">
+        <button type="button" class="btn primary" id="btnSave">Enregistrer</button>
+        <button type="button" class="btn" id="btnSaveCopy" hidden>Enregistrer une copie</button>
+        <button type="button" class="btn" id="btnNew">Nouvelle action</button>
+      </div>
+    </div>
+    <p class="hint" id="libHint" aria-live="polite"></p>
+    <div class="field">
+      <label class="lbl" for="libSearch">Rechercher dans la bibliothèque</label>
+      <input id="libSearch" type="search" placeholder="Titre de l'action" autocomplete="off">
+    </div>
+    <ul class="liblist" id="libList"></ul>
+    <details class="backup">
+      <summary>Sauvegarde et transfert</summary>
+      <p class="hint">Copie la bibliothèque pour la garder ailleurs ou la transférer vers un autre appareil. Pour la reprendre, colle le texte ci-dessous puis touche « Importer ».</p>
+      <div class="row">
+        <button type="button" class="btn" id="btnExport">Copier la bibliothèque</button>
+        <button type="button" class="btn" id="btnImport">Importer le texte collé</button>
+      </div>
+      <textarea id="backupText" rows="4" placeholder="Le texte de sauvegarde apparaît ici, ou colle-le ici pour importer."></textarea>
+    </details>
+  </section>
 </div>
 
 <script>
@@ -222,7 +270,7 @@ function exampleFrames(){
   return [f1,f2,f3,f4];
 }
 function defaults(){
-  return {mode:'half',defense:'0-6',defLabels:FORMS['0-6'].lab.slice(),frames:exampleFrames(),cur:0,trails:true,speed:1,loop:false};
+  return {mode:'half',defense:'0-6',defLabels:FORMS['0-6'].lab.slice(),frames:exampleFrames(),cur:0,trails:true,speed:1,loop:false,title:'Exemple : croisé DC / ARG sur 0-6',libId:'seed-croise'};
 }
 function load(){
   try{
@@ -235,7 +283,7 @@ function load(){
 }
 var saveTimer=0;
 function save(){
-  try{localStorage.setItem(KEY,JSON.stringify({mode:S.mode,defense:S.defense,defLabels:S.defLabels,frames:S.frames,cur:S.cur,trails:S.trails,speed:S.speed,loop:S.loop}));}catch(e){}
+  try{localStorage.setItem(KEY,JSON.stringify({mode:S.mode,defense:S.defense,defLabels:S.defLabels,frames:S.frames,cur:S.cur,trails:S.trails,speed:S.speed,loop:S.loop,title:S.title,libId:S.libId}));}catch(e){}
 }
 function saveSoon(){clearTimeout(saveTimer);saveTimer=setTimeout(save,400);}
 
@@ -523,7 +571,7 @@ noteEl.addEventListener('input',function(){S.frames[S.cur].note=noteEl.value;sav
 $('#btnExample').addEventListener('click',function(){
   stop();
   S.frames=exampleFrames();S.defense='0-6';S.defLabels=FORMS['0-6'].lab.slice();
-  $('#selDef').value='0-6';setCur(0);refresh();save();hint("Exemple rechargé. Lance la lecture pour le voir tourner.");
+  $('#selDef').value='0-6';S.libId=null;S.title='Exemple : croisé DC / ARG sur 0-6';syncTitle();renderLib();setCur(0);refresh();save();hint("Exemple rechargé. Lance la lecture pour le voir tourner.");
 });
 var clearBtn=$('#btnClear'),clearTimer=0;
 clearBtn.addEventListener('click',function(){
@@ -536,7 +584,7 @@ clearBtn.addEventListener('click',function(){
   stop();
   S.frames=[baseFrame(S.defense)];
   if(S.defense!=='none')S.defLabels=FORMS[S.defense].lab.slice();
-  setCur(0);refresh();save();hint('Terrain remis en place avec une seule étape.');
+  S.libId=null;S.title='';syncTitle();renderLib();setCur(0);refresh();save();hint('Terrain remis en place avec une seule étape.');
 });
 window.addEventListener('pagehide',save);
 window.addEventListener('resize',function(){setMode();update();drawTrails();});
@@ -566,12 +614,165 @@ document.addEventListener('fullscreenchange',function(){if(fsOn&&!fsElement())se
 document.addEventListener('webkitfullscreenchange',function(){if(fsOn&&!fsElement())setFs(false);});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&fsOn)setFs(false);});
 
+/* bibliothèque */
+var LKEY='handball-lib-v1', LIB=[], armedId=null, armedTimer=0;
+var titleIn=$('#titleIn'), libHintEl=$('#libHint');
+function libHint(t){libHintEl.textContent=t||'';}
+function uid(){return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function validEntry(e){
+  return !!(e&&typeof e.id==='string'&&typeof e.title==='string'&&Array.isArray(e.frames)&&e.frames.length&&
+    e.frames.every(function(f){return f&&f.pos&&ALL.every(function(id){return Array.isArray(f.pos[id]);});}));
+}
+function readLib(){
+  try{
+    var raw=localStorage.getItem(LKEY);
+    if(raw===null)return null;
+    var d=JSON.parse(raw);
+    return Array.isArray(d)?d.filter(validEntry):null;
+  }catch(e){return null;}
+}
+function writeLib(){
+  try{localStorage.setItem(LKEY,JSON.stringify(LIB));return true;}
+  catch(e){libHint("Impossible d'enregistrer dans ce navigateur. Utilise « Copier la bibliothèque » pour garder une copie.");return false;}
+}
+function byId(id){for(var i=0;i<LIB.length;i++){if(LIB[i].id===id)return LIB[i];}return null;}
+function snapshot(title,id){
+  return {id:id||uid(),title:title,mode:S.mode,defense:S.defense,defLabels:S.defLabels.slice(),frames:clone(S.frames),updated:Date.now()};
+}
+function syncTitle(){titleIn.value=S.title||'';}
+function fmtDate(ts){try{return new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});}catch(e){return '';}}
+function mkBtn(label,cls,fn){
+  var b=document.createElement('button');b.type='button';b.className='btn'+(cls?' '+cls:'');b.textContent=label;
+  b.addEventListener('click',fn);return b;
+}
+function renderLib(){
+  var q=$('#libSearch').value.trim().toLowerCase(),list=$('#libList');
+  list.innerHTML='';
+  $('#libCount').textContent=LIB.length+(LIB.length>1?' actions enregistrées':' action enregistrée');
+  $('#btnSave').textContent=S.libId?'Mettre à jour':'Enregistrer';
+  $('#btnSaveCopy').hidden=!S.libId;
+  var items=LIB.slice().sort(function(a,b){return b.updated-a.updated;}).filter(function(e){return !q||e.title.toLowerCase().indexOf(q)>=0;});
+  if(!items.length){
+    var li0=document.createElement('li');li0.className='empty';
+    li0.textContent=LIB.length?"Aucune action ne correspond à cette recherche.":"La bibliothèque est vide. Donne un titre à l'action en cours, puis enregistre-la.";
+    list.appendChild(li0);return;
+  }
+  items.forEach(function(e){
+    var li=document.createElement('li');li.className='item';
+    var cur=e.id===S.libId;
+    if(cur)li.setAttribute('aria-current','true');
+    var txt=document.createElement('div');txt.className='txt';
+    var t=document.createElement('div');t.className='t';t.textContent=e.title||'Sans titre';
+    if(cur){var tag=document.createElement('span');tag.className='tag';tag.textContent='Ouverte';t.appendChild(tag);}
+    var m=document.createElement('div');m.className='m';
+    var n=e.frames.length;
+    m.textContent=n+(n>1?' étapes':' étape')+' · '+(e.defense==='none'?'sans défense':'défense '+e.defense)+' · '+(e.mode==='full'?'terrain entier':'demi-terrain')+' · '+fmtDate(e.updated);
+    txt.appendChild(t);txt.appendChild(m);
+    var acts=document.createElement('div');acts.className='acts';
+    acts.appendChild(mkBtn('Ouvrir',cur?'':'primary',function(){openEntry(e.id);}));
+    acts.appendChild(mkBtn('Dupliquer','',function(){
+      var c=clone(e);c.id=uid();c.title=(e.title||'Sans titre')+' (copie)';c.updated=Date.now();
+      LIB.unshift(c);writeLib();renderLib();libHint('« '+c.title+' » ajoutée.');
+    }));
+    acts.appendChild(mkBtn(armedId===e.id?'Confirmer la suppression':'Supprimer',armedId===e.id?'armed':'',function(){
+      if(armedId!==e.id){
+        armedId=e.id;clearTimeout(armedTimer);
+        armedTimer=setTimeout(function(){armedId=null;renderLib();},3000);
+        renderLib();return;
+      }
+      clearTimeout(armedTimer);armedId=null;
+      LIB=LIB.filter(function(x){return x.id!==e.id;});
+      if(S.libId===e.id){S.libId=null;save();}
+      writeLib();renderLib();libHint('« '+(e.title||'Sans titre')+' » supprimée.');
+    }));
+    li.appendChild(txt);li.appendChild(acts);list.appendChild(li);
+  });
+}
+function openEntry(id){
+  var e=byId(id);if(!e)return;
+  stop();
+  S.mode=e.mode==='full'?'full':'half';
+  S.defense=e.defense||'0-6';
+  S.defLabels=(e.defLabels&&e.defLabels.length===6)?e.defLabels.slice():FORMS['0-6'].lab.slice();
+  S.frames=clone(e.frames);S.libId=e.id;S.title=e.title;
+  $('#selDef').value=S.defense;syncTitle();setMode();setCur(0);refresh();save();renderLib();
+  hint("« "+e.title+" » ouverte. Tes modifications ne sont enregistrées dans la bibliothèque qu'avec « Mettre à jour ».");
+  libHint('');
+  try{$('#stage').scrollIntoView({behavior:'smooth',block:'start'});}catch(_){}
+}
+function initLib(){
+  var l=readLib();
+  if(l===null){
+    LIB=[{id:'seed-croise',title:'Exemple : croisé DC / ARG sur 0-6',mode:'half',defense:'0-6',defLabels:FORMS['0-6'].lab.slice(),frames:exampleFrames(),updated:Date.now()}];
+    writeLib();
+  }else LIB=l;
+  if(S.libId&&!byId(S.libId))S.libId=null;
+  syncTitle();renderLib();
+}
+titleIn.addEventListener('input',function(){S.title=titleIn.value;saveSoon();});
+$('#libSearch').addEventListener('input',renderLib);
+function needTitle(){
+  var t=titleIn.value.trim();
+  if(!t){libHint("Donne un titre à l'action avant de l'enregistrer.");titleIn.focus();return null;}
+  return t;
+}
+$('#btnSave').addEventListener('click',function(){
+  stop();var t=needTitle();if(!t)return;
+  var ex=S.libId?byId(S.libId):null;
+  if(ex){
+    LIB[LIB.indexOf(ex)]=snapshot(t,ex.id);
+    libHint('« '+t+' » mise à jour.');
+  }else{
+    var e=snapshot(t);LIB.unshift(e);S.libId=e.id;
+    libHint('« '+t+' » ajoutée à la bibliothèque.');
+  }
+  S.title=t;writeLib();save();renderLib();
+});
+$('#btnSaveCopy').addEventListener('click',function(){
+  stop();var t=needTitle();if(!t)return;
+  var e=snapshot(t);LIB.unshift(e);S.libId=e.id;S.title=t;
+  writeLib();save();renderLib();libHint('Copie « '+t+' » ajoutée à la bibliothèque.');
+});
+$('#btnNew').addEventListener('click',function(){
+  stop();S.frames=[baseFrame(S.defense)];S.libId=null;S.title='';
+  syncTitle();setCur(0);refresh();save();renderLib();
+  libHint("Nouvelle action vide. Donne-lui un titre, construis-la, puis enregistre-la.");
+  try{$('#stage').scrollIntoView({behavior:'smooth',block:'start'});}catch(_){}
+});
+var backupEl=$('#backupText');
+$('#btnExport').addEventListener('click',function(){
+  var txt=JSON.stringify({v:1,lib:LIB});
+  backupEl.value=txt;backupEl.focus();backupEl.select();
+  var done=function(){libHint('Bibliothèque copiée ('+LIB.length+(LIB.length>1?' actions':' action')+'). Colle-la dans une note pour la garder.');};
+  var fail=function(){libHint('Le texte est prêt dans la zone ci-dessous : sélectionne-le et copie-le.');};
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,fail);
+    else fail();
+  }catch(_){fail();}
+});
+$('#btnImport').addEventListener('click',function(){
+  var raw=backupEl.value.trim();
+  if(!raw){libHint("Colle d'abord le texte de sauvegarde dans la zone.");return;}
+  var d;
+  try{d=JSON.parse(raw);}catch(e){libHint("Ce texte n'est pas une sauvegarde valide.");return;}
+  var arr=Array.isArray(d)?d:(d&&Array.isArray(d.lib)?d.lib:null);
+  if(!arr){libHint("Ce texte n'est pas une sauvegarde valide.");return;}
+  var added=0,upd=0;
+  arr.filter(validEntry).forEach(function(e){
+    var ex=byId(e.id);
+    if(!ex){LIB.push(e);added++;}
+    else if((e.updated||0)>(ex.updated||0)){LIB[LIB.indexOf(ex)]=e;upd++;}
+  });
+  writeLib();renderLib();
+  libHint(added+(added>1?' actions ajoutées':' action ajoutée')+(upd?', '+upd+(upd>1?' mises à jour':' mise à jour'):'')+'.');
+});
+
 /* boot */
 $('#selDef').value=S.defense;
 $('#chkTrails').checked=!!S.trails;
 $('#chkLoop').checked=!!S.loop;
 Array.prototype.forEach.call(document.querySelectorAll('#segSpeed button'),function(b){b.setAttribute('aria-pressed',String(parseFloat(b.dataset.v)===S.speed));});
-setMode();setCur(S.cur);playUI();refresh();
+setMode();setCur(S.cur);playUI();refresh();initLib();
 hint("Glisse une joueuse ou le ballon. « + Étape » copie la position actuelle pour construire la suite.");
 })();
 </script>
