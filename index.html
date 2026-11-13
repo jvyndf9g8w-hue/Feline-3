@@ -69,7 +69,14 @@ select{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius
 .btn.danger[data-armed="1"]{border-color:#c0392b;color:#c0392b;font-weight:600}
 .stage{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--apron)}
 .fsbtn{position:absolute;top:10px;right:10px;z-index:3;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-weight:600;display:inline-flex;align-items:center;gap:8px}
-.fsbar{display:none}
+.fsbar,.fsctl,.fslib{display:none}
+.stage.fs .fsctl{display:flex;position:absolute;z-index:3;left:12px;right:12px;margin-inline:auto;width:fit-content;bottom:max(12px,env(safe-area-inset-bottom,0px));gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px;border-radius:14px;border:1px solid var(--line);background:var(--panel);background:color-mix(in srgb,var(--panel) 92%,transparent);max-width:calc(100% - 24px)}
+.fsstep{font:600 17px/1 var(--disp);letter-spacing:.04em;padding:0 8px;min-width:84px;text-align:center}
+.stage.fs .fslib:not([hidden]){display:flex;flex-direction:column;position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 32px));max-height:calc(100% - 110px);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:12px;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.fslibhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fslibhead strong{font:700 22px/1 var(--disp);letter-spacing:.02em;text-transform:uppercase}
+.fslib .liblist{overflow:auto;min-height:0}
+body.viewer #fsLib{display:none}
 .stage.fs{position:fixed;inset:0;z-index:50;border-radius:0;border:0;display:flex;flex-direction:column}
 .stage.fs .fsbtn{display:none}
 .stage.fs svg#board{width:100%;height:100%;max-height:none}
@@ -152,6 +159,17 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
 
   <section class="stage" id="stage">
     <button type="button" class="fsbtn" id="btnFs" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 7V2h5M11 2h5v5M16 11v5h-5M7 16H2v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Plein écran</button>
+    <div class="fsctl">
+      <button type="button" class="btn" id="fsRestart"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M3.5 9a5.5 5.5 0 1 0 1.8-4.1M3 2.5v3.5h3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Recommencer</button>
+      <button type="button" class="btn primary" id="fsPlay"></button>
+      <button type="button" class="btn" id="fsSpeed" aria-label="Vitesse de lecture">1×</button>
+      <span class="fsstep" id="fsStep"></span>
+      <button type="button" class="btn" id="fsLib">Bibliothèque</button>
+    </div>
+    <div class="fslib" id="fsLibPanel" hidden>
+      <div class="fslibhead"><strong>Bibliothèque</strong><button type="button" class="btn" id="fsLibClose">Fermer</button></div>
+      <ul class="liblist" id="fsLibList"></ul>
+    </div>
     <div class="fsbar">
       <button type="button" class="btn" id="fsView">Terrain entier</button>
       <button type="button" class="btn" id="fsExit">Quitter le plein écran</button>
@@ -319,6 +337,7 @@ if(!Array.isArray(S.defLabels)||S.defLabels.length!==6)S.defLabels=FORMS['0-6'].
 var svg=$('#board'), gHalf=$('#gHalf'), gFull=$('#gFull'), trailsG=$('#trails'), tokLayer=$('#tokens'), ballLayer=$('#ballLayer');
 var noteEl=$('#note'), hintEl=$('#hint'), stepsEl=$('#steps'), btnPlay=$('#btnPlay');
 var playing=false, raf=0, t0=0, anim=null, drag=null;
+var fsPlay=$('#fsPlay');
 
 function rad(){return S.mode==='full'?1.0:0.95;}
 function rotHalf(){return S.mode==='half'&&fsOn&&window.innerHeight>window.innerWidth;}
@@ -454,6 +473,7 @@ function renderSteps(){
 }
 function setCur(k){
   S.cur=k;renderSteps();
+  var fst=$('#fsStep');if(fst)fst.textContent='Étape '+(k+1)+' / '+S.frames.length;
   noteEl.value=S.frames[k].note||'';
 }
 function playUI(){
@@ -461,6 +481,7 @@ function playUI(){
     ?'<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="3" y="2" width="4" height="14" rx="1" fill="currentColor"/><rect x="11" y="2" width="4" height="14" rx="1" fill="currentColor"/></svg>'
     :'<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2.5v13l11-6.5z" fill="currentColor"/></svg>';
   btnPlay.innerHTML=icon+'<span>'+(playing?'Pause':'Lecture')+'</span>';
+  fsPlay.innerHTML=btnPlay.innerHTML;
   noteEl.readOnly=playing||VIEWER;
 }
 function refresh(){setLabels();update();drawTrails();}
@@ -557,12 +578,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#segMode button'),functi
   b.addEventListener('click',function(){switchMode(b.dataset.v);});
 });
 Array.prototype.forEach.call(document.querySelectorAll('#segSpeed button'),function(b){
-  b.addEventListener('click',function(){
-    S.speed=parseFloat(b.dataset.v);
-    Array.prototype.forEach.call(document.querySelectorAll('#segSpeed button'),function(x){x.setAttribute('aria-pressed',String(x===b));});
-    if(playing){t0=performance.now();setCur(0);}
-    save();
-  });
+  b.addEventListener('click',function(){setSpeed(parseFloat(b.dataset.v));});
 });
 $('#selDef').addEventListener('change',function(e){
   stop();
@@ -618,6 +634,7 @@ var stageEl=$('#stage'), fsOn=false;
 function fsElement(){return document.fullscreenElement||document.webkitFullscreenElement;}
 function setFs(on){
   fsOn=on;
+  $('#fsLibPanel').hidden=true;
   stageEl.classList.toggle('fs',on);
   document.body.style.overflow=on?'hidden':'';
   $('#btnFs').setAttribute('aria-pressed',String(on));
@@ -1000,12 +1017,47 @@ function startViewer(){
   setTimeout(function(){if(!playing)play();},800);
 }
 
+/* commandes du plein écran */
+function syncSpeedUI(){
+  Array.prototype.forEach.call(document.querySelectorAll('#segSpeed button'),function(b){b.setAttribute('aria-pressed',String(parseFloat(b.dataset.v)===S.speed));});
+  var fs=$('#fsSpeed');if(fs)fs.textContent=String(S.speed).replace('.',',')+'×';
+}
+function setSpeed(v){
+  if(playing){var now=performance.now();t0=now-((now-t0)*S.speed)/v;}
+  S.speed=v;syncSpeedUI();save();
+}
+$('#fsPlay').addEventListener('click',function(){btnPlay.click();});
+$('#fsSpeed').addEventListener('click',function(){var L=[0.5,1,2],i=L.indexOf(S.speed);setSpeed(L[(i+1)%L.length]);});
+$('#fsRestart').addEventListener('click',function(){stop();setCur(0);refresh();play();});
+function closeFsLib(){$('#fsLibPanel').hidden=true;}
+function renderFsLib(){
+  var list=$('#fsLibList');list.innerHTML='';
+  var items=LIB.slice().sort(function(a,b){return b.updated-a.updated;});
+  if(!items.length){
+    var li0=document.createElement('li');li0.className='empty';li0.textContent="La bibliothèque est vide.";list.appendChild(li0);return;
+  }
+  items.forEach(function(e){
+    var li=document.createElement('li');li.className='item';
+    var cur=e.id===S.libId;
+    if(cur)li.setAttribute('aria-current','true');
+    var txt=document.createElement('div');txt.className='txt';
+    var t=document.createElement('div');t.className='t';t.textContent=e.title||'Sans titre';
+    var m=document.createElement('div');m.className='m';var n=e.frames.length;
+    m.textContent=n+(n>1?' étapes':' étape')+' · '+(e.mode==='full'?'terrain entier':'demi-terrain');
+    txt.appendChild(t);txt.appendChild(m);li.appendChild(txt);
+    li.appendChild(mkBtn(cur?'Rouvrir':'Ouvrir',cur?'':'primary',function(){closeFsLib();openEntry(e.id);}));
+    list.appendChild(li);
+  });
+}
+$('#fsLib').addEventListener('click',function(){renderFsLib();$('#fsLibPanel').hidden=false;});
+$('#fsLibClose').addEventListener('click',closeFsLib);
+
 /* boot */
 $('#selDef').value=S.defense;
 $('#chkTrails').checked=!!S.trails;
 $('#chkLoop').checked=!!S.loop;
 Array.prototype.forEach.call(document.querySelectorAll('#segSpeed button'),function(b){b.setAttribute('aria-pressed',String(parseFloat(b.dataset.v)===S.speed));});
-setMode();setCur(S.cur);playUI();refresh();initLib();startViewer();
+setMode();setCur(S.cur);playUI();refresh();initLib();startViewer();syncSpeedUI();
 hint("Glisse une joueuse ou le ballon. « + Étape » copie la position actuelle pour construire la suite.");
 })();
 </script>
