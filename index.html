@@ -77,6 +77,7 @@ select{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius
 .fslibhead strong{font:700 22px/1 var(--disp);letter-spacing:.02em;text-transform:uppercase}
 .fslib .liblist{overflow:auto;min-height:0}
 body.viewer #fsLib{display:none}
+#fsPlay,#fsPause{display:inline-flex;align-items:center;gap:8px}
 .stage.fs{position:fixed;inset:0;z-index:50;border-radius:0;border:0;display:flex;flex-direction:column}
 .stage.fs .fsbtn{display:none}
 .stage.fs svg#board{width:100%;height:100%;max-height:none}
@@ -162,17 +163,16 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
     <div class="fsctl">
       <button type="button" class="btn" id="fsRestart"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><path d="M3.5 9a5.5 5.5 0 1 0 1.8-4.1M3 2.5v3.5h3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Recommencer</button>
       <button type="button" class="btn primary" id="fsPlay"></button>
+      <button type="button" class="btn" id="fsPause"></button>
       <button type="button" class="btn" id="fsSpeed" aria-label="Vitesse de lecture">1×</button>
       <span class="fsstep" id="fsStep"></span>
       <button type="button" class="btn" id="fsLib">Bibliothèque</button>
+      <button type="button" class="btn" id="fsView">Terrain entier</button>
+      <button type="button" class="btn" id="fsExit" aria-label="Quitter le plein écran">Quitter</button>
     </div>
     <div class="fslib" id="fsLibPanel" hidden>
       <div class="fslibhead"><strong>Bibliothèque</strong><button type="button" class="btn" id="fsLibClose">Fermer</button></div>
       <ul class="liblist" id="fsLibList"></ul>
-    </div>
-    <div class="fsbar">
-      <button type="button" class="btn" id="fsView">Terrain entier</button>
-      <button type="button" class="btn" id="fsExit">Quitter le plein écran</button>
     </div>
     <svg id="board" viewBox="-0.5 -0.5 29.2 21" role="img" aria-label="Terrain de handball avec joueuses déplaçables">
       <defs>
@@ -336,8 +336,8 @@ if(!Array.isArray(S.defLabels)||S.defLabels.length!==6)S.defLabels=FORMS['0-6'].
 
 var svg=$('#board'), gHalf=$('#gHalf'), gFull=$('#gFull'), trailsG=$('#trails'), tokLayer=$('#tokens'), ballLayer=$('#ballLayer');
 var noteEl=$('#note'), hintEl=$('#hint'), stepsEl=$('#steps'), btnPlay=$('#btnPlay');
-var playing=false, raf=0, t0=0, anim=null, drag=null;
-var fsPlay=$('#fsPlay');
+var playing=false, raf=0, t0=0, anim=null, drag=null, pausedAt=0;
+var fsPlay=$('#fsPlay'), fsPause=$('#fsPause');
 
 function rad(){return S.mode==='full'?1.0:0.95;}
 function rotHalf(){return S.mode==='half'&&fsOn&&window.innerHeight>window.innerWidth;}
@@ -419,7 +419,7 @@ function setMode(){
 }
 
 function update(){
-  var v=(playing&&anim)?anim:frameView(S.frames[S.cur]);
+  var v=anim?anim:frameView(S.frames[S.cur]);
   ALL.forEach(function(id){
     var o=tok[id],p=v.pos[id],xy=V(p[0],p[1]);
     var dr=drag&&drag.id===id;
@@ -440,7 +440,7 @@ function seg(x1,y1,x2,y2,c1,c2){
 }
 function drawTrails(){
   trailsG.innerHTML='';
-  if(!S.trails||playing||S.cur===0)return;
+  if(!S.trails||playing||anim||S.cur===0)return;
   var a=S.frames[S.cur-1],b=S.frames[S.cur],R=rad();
   ALL.forEach(function(id){
     if(defHidden(id))return;
@@ -481,7 +481,10 @@ function playUI(){
     ?'<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="3" y="2" width="4" height="14" rx="1" fill="currentColor"/><rect x="11" y="2" width="4" height="14" rx="1" fill="currentColor"/></svg>'
     :'<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2.5v13l11-6.5z" fill="currentColor"/></svg>';
   btnPlay.innerHTML=icon+'<span>'+(playing?'Pause':'Lecture')+'</span>';
-  fsPlay.innerHTML=btnPlay.innerHTML;
+  fsPlay.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2.5v13l11-6.5z" fill="currentColor"/></svg><span>Lecture</span>';
+  fsPause.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="3" y="2" width="4" height="14" rx="1" fill="currentColor"/><rect x="11" y="2" width="4" height="14" rx="1" fill="currentColor"/></svg><span>Pause</span>';
+  fsPlay.className='btn'+(playing?'':' primary');
+  fsPause.className='btn'+(playing?' primary':'');
   noteEl.readOnly=playing||VIEWER;
 }
 function refresh(){setLabels();update();drawTrails();}
@@ -509,15 +512,24 @@ function tick(now){
 function play(){
   if(S.frames.length<2){hint("Ajoute une deuxième étape avec « + Étape » pour lancer la lecture.");return;}
   hint('');
-  playing=true;setCur(0);anim=frameView(S.frames[0]);
+  var resume=!!anim&&!playing;
+  playing=true;
+  if(!resume){setCur(0);anim=frameView(S.frames[0]);pausedAt=0;}
   trailsG.innerHTML='';playUI();
-  t0=performance.now();raf=requestAnimationFrame(tick);
+  t0=performance.now()-pausedAt/S.speed;raf=requestAnimationFrame(tick);
+}
+function pause(){
+  if(!playing)return;
+  pausedAt=(performance.now()-t0)*S.speed;
+  cancelAnimationFrame(raf);playing=false;playUI();
 }
 function stop(){
-  if(!playing)return;
+  if(!playing&&!anim)return;
+  pausedAt=0;
   cancelAnimationFrame(raf);playing=false;anim=null;playUI();refresh();save();
 }
 function finish(){
+  pausedAt=0;
   cancelAnimationFrame(raf);playing=false;anim=null;
   setCur(S.frames.length-1);playUI();refresh();
 }
@@ -537,6 +549,7 @@ svg.addEventListener('pointerdown',function(e){
   var g=e.target.closest&&e.target.closest('[data-id]');
   if(!g)return;
   e.preventDefault();
+  if(anim)stop();
   var id=g.getAttribute('data-id'),f=S.frames[S.cur];
   var pv=pt(e),pw=W(pv[0],pv[1]),dx=0,dy=0;
   if(id==='BALL'){
@@ -606,7 +619,7 @@ $('#btnDel').addEventListener('click',function(){
   S.frames.splice(S.cur,1);
   setCur(Math.min(S.cur,S.frames.length-1));refresh();save();hint('');
 });
-btnPlay.addEventListener('click',function(){if(playing)stop();else play();});
+btnPlay.addEventListener('click',function(){if(playing)pause();else play();});
 noteEl.addEventListener('input',function(){S.frames[S.cur].note=noteEl.value;saveSoon();});
 $('#btnExample').addEventListener('click',function(){
   stop();
@@ -1026,7 +1039,8 @@ function setSpeed(v){
   if(playing){var now=performance.now();t0=now-((now-t0)*S.speed)/v;}
   S.speed=v;syncSpeedUI();save();
 }
-$('#fsPlay').addEventListener('click',function(){btnPlay.click();});
+$('#fsPlay').addEventListener('click',function(){if(!playing)play();});
+$('#fsPause').addEventListener('click',function(){pause();});
 $('#fsSpeed').addEventListener('click',function(){var L=[0.5,1,2],i=L.indexOf(S.speed);setSpeed(L[(i+1)%L.length]);});
 $('#fsRestart').addEventListener('click',function(){stop();setCur(0);refresh();play();});
 function closeFsLib(){$('#fsLibPanel').hidden=true;}
