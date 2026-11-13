@@ -77,6 +77,18 @@ select{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius
 .fslibhead strong{font:700 22px/1 var(--disp);letter-spacing:.02em;text-transform:uppercase}
 .fslib .liblist{overflow:auto;min-height:0}
 body.viewer #fsLib{display:none}
+body.viewer #fsEdit{display:none}
+#fsNext,#fsPrev{min-width:44px;padding:0 12px}
+#fsAdd{display:none}
+.stage.fs.editing #fsAdd{display:inline-flex}
+.fstoast{display:none}
+.stage.fs .fstoast{position:absolute;z-index:7;top:14px;left:0;right:0;margin-inline:auto;width:fit-content;max-width:calc(100% - 32px);padding:10px 16px;border-radius:12px;background:var(--panel);color:var(--fg);border:1px solid var(--line);box-shadow:0 6px 24px rgba(0,0,0,.35);font-weight:500}
+.stage.fs .fstoast[hidden]{display:none}
+body{padding-right:max(46px,calc(34px + env(safe-area-inset-right,0px)))}
+#vscroll{position:fixed;top:0;right:0;bottom:0;width:34px;z-index:40;background:rgba(120,130,140,.14);touch-action:none;user-select:none;-webkit-user-select:none}
+#vscroll[hidden]{display:none}
+#vthumb{position:absolute;left:4px;right:4px;top:0;min-height:72px;border-radius:15px;background:var(--muted);opacity:.75}
+#vthumb:active{opacity:1;background:var(--accent)}
 #fsPlay,#fsPause,#fsPen{display:inline-flex;align-items:center;gap:8px}
 .fsink{display:none}
 .pathp{position:absolute;z-index:5;left:0;right:0;margin-inline:auto;width:fit-content;max-width:calc(100% - 16px);bottom:10px;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 10px;border-radius:14px;border:1px solid var(--line);background:var(--panel);box-shadow:0 6px 24px rgba(0,0,0,.3)}
@@ -182,12 +194,17 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <button type="button" class="btn primary" id="fsPlay"></button>
       <button type="button" class="btn" id="fsPause"></button>
       <button type="button" class="btn" id="fsSpeed" aria-label="Vitesse de lecture">1×</button>
+      <button type="button" class="btn" id="fsPrev" aria-label="Étape précédente">&#9664;</button>
       <span class="fsstep" id="fsStep"></span>
+      <button type="button" class="btn" id="fsNext" aria-label="Étape suivante">&#9654;</button>
+      <button type="button" class="btn" id="fsAdd">+ Étape</button>
+      <button type="button" class="btn" id="fsEdit" aria-pressed="false">Modifier</button>
       <button type="button" class="btn" id="fsPen" aria-pressed="false">Stylo</button>
       <button type="button" class="btn" id="fsLib">Bibliothèque</button>
       <button type="button" class="btn" id="fsView">Terrain entier</button>
       <button type="button" class="btn" id="fsExit" aria-label="Quitter le plein écran">Quitter</button>
     </div>
+    <div class="fstoast" id="fsToast" role="status" hidden></div>
     <div class="pathp" id="pathP" hidden>
       <strong id="pathT">Trajet</strong>
       <button type="button" class="btn" data-k="0" aria-pressed="false">Droit</button>
@@ -304,6 +321,7 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
   </section>
 </div>
 
+<div id="vscroll" hidden><div id="vthumb"></div></div>
 <script>
 (function(){
 'use strict';
@@ -384,7 +402,8 @@ if(!Array.isArray(S.defLabels)||S.defLabels.length!==6)S.defLabels=FORMS['0-6'].
 
 var svg=$('#board'), gHalf=$('#gHalf'), gFull=$('#gFull'), trailsG=$('#trails'), tokLayer=$('#tokens'), ballLayer=$('#ballLayer');
 var noteEl=$('#note'), hintEl=$('#hint'), stepsEl=$('#steps'), btnPlay=$('#btnPlay');
-var pathSel=null, curveDrag=null;
+var pathSel=null, curveDrag=null, fsEdit=false;
+function canEdit(){return !fsOn||fsEdit;}
 var playing=false, raf=0, t0=0, anim=null, drag=null, pausedAt=0;
 var fsPlay=$('#fsPlay'), fsPause=$('#fsPause');
 
@@ -512,7 +531,7 @@ function drawTrails(){
     el('circle',{cx:P[0],cy:P[1],r:R,style:'fill:none;stroke:'+col+';stroke-width:.14;stroke-dasharray:.3 .25;opacity:.85'},trailsG);
     var kk=curveK(b,id);
     var hp=pathAt(p,q,kk,0.5),HV=V(hp[0],hp[1]);
-    if(!VIEWER){
+    if(!VIEWER&&canEdit()){
       el('circle',{cx:HV[0],cy:HV[1],r:1.1,'data-curve':id,style:'fill:transparent;pointer-events:all;cursor:grab;touch-action:none'},trailsG);
       el('circle',{cx:HV[0],cy:HV[1],r:.42,style:'fill:#fff;stroke:'+col+';stroke-width:.16;pointer-events:none;opacity:.95'},trailsG);
     }
@@ -624,6 +643,7 @@ function clampW(x,y){
 }
 svg.addEventListener('pointerdown',function(e){
   if(playing||VIEWER)return;
+  if(!canEdit()){if(e.target.closest&&e.target.closest('[data-id]'))fsToast('Mode lecture. Touche « Modifier » pour déplacer les joueuses.');return;}
   var g=e.target.closest&&e.target.closest('[data-id]');
   if(!g)return;
   e.preventDefault();
@@ -651,7 +671,7 @@ svg.addEventListener('pointermove',function(e){
   update();
 });
 svg.addEventListener('pointerdown',function(e){
-  if(playing||VIEWER)return;
+  if(playing||VIEWER||!canEdit())return;
   var h=e.target.closest&&e.target.closest('[data-curve]');
   if(!h)return;
   e.preventDefault();e.stopPropagation();
@@ -678,6 +698,7 @@ svg.addEventListener('pointerup',endCurve);
 svg.addEventListener('pointercancel',endCurve);
 function pathName(id){try{return tok[id].t.textContent;}catch(e){return id;}}
 function openPath(id){
+  if(!canEdit())return;
   if(VIEWER||S.cur===0||playing){if(!VIEWER&&S.cur===0)hint("Les trajets se règlent à partir de l'étape 2 : touche une joueuse sur une étape suivante.");return;}
   if(defHidden(id))return;
   pathSel=id;
@@ -814,7 +835,7 @@ function inkEnd(){
 inkCap.addEventListener('pointerup',inkEnd);
 inkCap.addEventListener('pointercancel',inkEnd);
 $('#fsPen').addEventListener('click',function(){
-  if(!inkOn){inkSet(true);return;}
+  if(!inkOn){if(fsEdit)endEdit();inkSet(true);return;}
   if($('#fsInk').hidden){inkBar(true);return;}
   inkSet(false);
 });
@@ -828,12 +849,47 @@ Array.prototype.forEach.call(document.querySelectorAll('.sw'),function(b){
   });
 });
 
+/* mode modification en plein écran */
+var toastTm=0;
+function fsToast(msg){
+  var el2=$('#fsToast');el2.textContent=msg;el2.hidden=false;
+  clearTimeout(toastTm);toastTm=setTimeout(function(){el2.hidden=true;},2600);
+}
+function curLocked(){var e=S.libId?byId(S.libId):null;return !!(e&&e.locked);}
+function syncEditUI(){
+  var b=$('#fsEdit'),lk=curLocked();
+  if(lk&&fsEdit){fsEdit=false;}
+  b.className='btn'+(fsEdit?' primary':'');
+  b.setAttribute('aria-pressed',String(fsEdit));
+  b.textContent=lk?'\uD83D\uDD12 Verrouillée':(fsEdit?'Terminer':'Modifier');
+  stageEl.classList.toggle('editing',fsEdit&&fsOn);
+}
+function endEdit(){
+  if(!fsEdit)return;
+  fsEdit=false;closePath();
+  var ex=S.libId?byId(S.libId):null,msg='Mode lecture.';
+  if(ex&&!ex.locked){
+    LIB[LIB.indexOf(ex)]=snapshot(S.title||ex.title,ex.id);writeLib();renderLib();
+    msg='Modifications enregistrées dans « '+(S.title||ex.title)+' ».';
+  }
+  syncEditUI();refresh();save();fsToast(msg);
+}
+$('#fsEdit').addEventListener('click',function(){
+  if(curLocked()){fsToast('Action verrouillée : modification impossible en plein écran. Déverrouille-la dans la bibliothèque.');return;}
+  if(fsEdit){endEdit();return;}
+  stop();fsEdit=true;inkSet(false);syncEditUI();refresh();
+  fsToast('Mode modification : déplace les joueuses, tire le point blanc des flèches pour les courber.');
+});
+$('#fsPrev').addEventListener('click',function(){stop();if(S.cur>0){setCur(S.cur-1);refresh();}});
+$('#fsNext').addEventListener('click',function(){stop();if(S.cur<S.frames.length-1){setCur(S.cur+1);refresh();}});
+$('#fsAdd').addEventListener('click',function(){$('#btnAdd').click();fsToast('Étape '+(S.cur+1)+' ajoutée.');});
+
 /* plein écran */
 var stageEl=$('#stage'), fsOn=false;
 function fsElement(){return document.fullscreenElement||document.webkitFullscreenElement;}
 function setFs(on){
   fsOn=on;
-  if(!on){inkSet(false);inkClear();}
+  if(!on){if(fsEdit)endEdit();inkSet(false);inkClear();}
   $('#fsLibPanel').hidden=true;
   stageEl.classList.toggle('fs',on);
   document.body.style.overflow=on?'hidden':'';
@@ -846,6 +902,7 @@ function setFs(on){
       (document.exitFullscreen||document.webkitExitFullscreen).call(document);
     }
   }catch(_){}
+  syncEditUI();
   setMode();update();drawTrails();
 }
 $('#btnFs').addEventListener('click',function(){setFs(true);});
@@ -887,6 +944,7 @@ function mkBtn(label,cls,fn){
   b.addEventListener('click',fn);return b;
 }
 function renderLib(){
+  if(typeof syncEditUI==='function'&&fsOn)syncEditUI();
   var q=$('#libSearch').value.trim().toLowerCase(),list=$('#libList');
   list.innerHTML='';
   $('#libCount').textContent=LIB.length+(LIB.length>1?' actions enregistrées':' action enregistrée');
@@ -948,11 +1006,12 @@ function renderLib(){
 function openEntry(id){
   var e=byId(id);if(!e)return;
   stop();
+  if(fsEdit){fsEdit=false;}
   S.mode=e.mode==='full'?'full':'half';
   S.defense=e.defense||'0-6';
   S.defLabels=(e.defLabels&&e.defLabels.length===6)?e.defLabels.slice():FORMS['0-6'].lab.slice();
   S.frames=clone(e.frames);S.libId=e.id;S.title=e.title;
-  $('#selDef').value=S.defense;syncTitle();setMode();setCur(0);refresh();save();renderLib();
+  $('#selDef').value=S.defense;syncTitle();setMode();setCur(0);refresh();save();renderLib();syncEditUI();
   hint("« "+e.title+" » ouverte. Tes modifications ne sont enregistrées dans la bibliothèque qu'avec « Mettre à jour ».");
   libHint('');
   try{$('#stage').scrollIntoView({behavior:'smooth',block:'start'});}catch(_){}
@@ -1344,6 +1403,47 @@ function renderFsLib(){
 }
 $('#fsLib').addEventListener('click',function(){renderFsLib();$('#fsLibPanel').hidden=false;});
 $('#fsLibClose').addEventListener('click',closeFsLib);
+
+/* grande barre de défilement à droite */
+(function(){
+  var tr=$('#vscroll'),th=$('#vthumb'),dragY=null,off=0;
+  function metrics(){
+    var de=document.documentElement,vh=window.innerHeight,dh=Math.max(de.scrollHeight,document.body.scrollHeight);
+    return {vh:vh,dh:dh,max:Math.max(0,dh-vh)};
+  }
+  function upd(){
+    var m=metrics();
+    var hide=m.max<8||(typeof fsOn!=='undefined'&&fsOn);
+    tr.hidden=hide;if(hide)return;
+    var th_h=Math.max(72,tr.clientHeight*m.vh/m.dh),room=tr.clientHeight-th_h;
+    th.style.height=th_h+'px';
+    th.style.top=(room*(window.pageYOffset/m.max))+'px';
+  }
+  function toScroll(y){
+    var m=metrics(),th_h=th.offsetHeight,room=tr.clientHeight-th_h;
+    var r=Math.max(0,Math.min(1,(y-off)/room));
+    window.scrollTo(0,r*m.max);
+  }
+  th.addEventListener('pointerdown',function(e){
+    e.preventDefault();e.stopPropagation();
+    dragY=e.clientY;off=e.clientY-th.getBoundingClientRect().top;
+    try{th.setPointerCapture(e.pointerId);}catch(_){}
+  });
+  th.addEventListener('pointermove',function(e){if(dragY===null)return;e.preventDefault();toScroll(e.clientY);});
+  function end(){dragY=null;}
+  th.addEventListener('pointerup',end);th.addEventListener('pointercancel',end);
+  tr.addEventListener('pointerdown',function(e){
+    if(e.target!==tr)return;
+    var r=th.getBoundingClientRect();
+    window.scrollBy({top:(e.clientY<r.top?-1:1)*window.innerHeight*0.85,behavior:'smooth'});
+  });
+  window.addEventListener('scroll',upd,{passive:true});
+  window.addEventListener('resize',upd);
+  window.addEventListener('load',upd);
+  if('ResizeObserver' in window){try{new ResizeObserver(upd).observe(document.body);}catch(_){}}
+  setInterval(upd,1000);
+  upd();
+})();
 
 /* boot */
 $('#selDef').value=S.defense;
