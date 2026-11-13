@@ -1231,10 +1231,46 @@ notesEl.addEventListener('change',function(){try{localStorage.setItem(NKEY,notes
 var shortEl=$('#chkShort');
 if(canShort())shortEl.checked=shortOn();else{shortEl.checked=false;shortEl.disabled=true;}
 shortEl.addEventListener('change',function(){try{localStorage.setItem(SKEY,shortEl.checked?'1':'0');}catch(e){}});
+function expandLink(code){
+  var api='https://is.gd/forward.php?format=json&shorturl='+encodeURIComponent(code);
+  function viaFetch(){
+    return new Promise(function(res,rej){
+      var ctl=('AbortController' in window)?new AbortController():null;
+      var tm=setTimeout(function(){if(ctl)ctl.abort();rej(new Error('timeout'));},5000);
+      fetch(api,ctl?{signal:ctl.signal}:{}).then(function(r){return r.json();}).then(function(j){
+        clearTimeout(tm);if(j&&j.url)res(j.url);else rej(new Error('bad'));
+      }).catch(function(err){clearTimeout(tm);rej(err);});
+    });
+  }
+  function viaJsonp(){
+    return new Promise(function(res,rej){
+      var name='isgdf'+Date.now(),s=document.createElement('script'),tm;
+      function clean(){clearTimeout(tm);try{delete window[name];}catch(e){window[name]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);}
+      window[name]=function(j){clean();if(j&&j.url)res(j.url);else rej(new Error('bad'));};
+      s.onerror=function(){clean();rej(new Error('script'));};
+      tm=setTimeout(function(){clean();rej(new Error('timeout'));},5000);
+      s.src=api+'&callback='+name;document.head.appendChild(s);
+    });
+  }
+  return viaFetch().catch(viaJsonp);
+}
 $('#btnAddLink').addEventListener('click',function(){
   var raw=$('#linkIn').value.trim();
   if(!raw){libHint("Colle d'abord le lien reçu dans la zone.");return;}
+  addFromText(raw,false);
+});
+function addFromText(raw,expanded){
   var m=/#s=([A-Za-z0-9_-]+)/.exec(raw),d=null;
+  if(!m&&!expanded){
+    var sm=/is\.gd\/([A-Za-z0-9_-]+)/i.exec(raw);
+    if(sm){
+      libHint('Lecture du lien court…');
+      expandLink(sm[1]).then(function(u){addFromText(u,true);}).catch(function(){
+        libHint("Impossible de lire ce lien court : il faut une connexion internet. Réessaie avec du réseau, ou ouvre le lien dans Safari puis touche « Enregistrer dans ma bibliothèque ».");
+      });
+      return;
+    }
+  }
   if(m){
     try{
       var a=toBytes(m[1]);
@@ -1243,7 +1279,7 @@ $('#btnAddLink').addEventListener('click',function(){
   }
   if(!d){
     libHint(m?"Ce lien est incomplet ou abîmé. Demande qu'on te le renvoie en entier."
-      :"Je ne trouve pas de séquence dans ce texte. Si c'est un lien raccourci (is.gd), ouvre-le d'abord dans le navigateur, puis touche « Enregistrer dans ma bibliothèque ».");
+      :"Je ne trouve pas de séquence dans ce texte. Colle le lien complet reçu (ou le lien court is.gd).");
     return;
   }
   var e={id:uid(),title:d.title||'Séquence reçue',mode:d.mode,defense:d.defense,defLabels:d.defLabels,frames:d.frames,updated:Date.now(),locked:false};
@@ -1252,7 +1288,7 @@ $('#btnAddLink').addEventListener('click',function(){
   if(!writeLib())return;
   $('#linkIn').value='';renderLib();
   libHint('« '+e.title+' » ajoutée à ta bibliothèque ('+e.frames.length+(e.frames.length>1?' étapes':' étape')+').');
-});
+}
 $('#btnKeep').addEventListener('click',function(){
   var e=snapshot(S.title||'Séquence reçue');
   var cur=readLib()||[];cur.unshift(e);LIB=cur;
