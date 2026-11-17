@@ -77,6 +77,35 @@ select{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius
 .fslibhead strong{font:700 22px/1 var(--disp);letter-spacing:.02em;text-transform:uppercase}
 .fslib .liblist{overflow:auto;min-height:0}
 body.viewer #fsLib{display:none}
+body.viewer #fsVid{display:none}
+#fsVidWrap{display:none}
+.stage.fs.split #fsVidWrap,.stage.fs.vonly #fsVidWrap{display:block;position:relative;flex:1 1 0;min-width:0;min-height:0;background:#000;overflow:hidden}
+.stage.fs.split{flex-direction:row}
+.stage.fs.split.splitcol{flex-direction:column}
+.stage.fs.split svg#board{flex:1 1 0;width:auto;height:auto;min-width:0;min-height:0}
+.stage.fs.vonly svg#board{display:none}
+#fsVidWrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+#vInk{position:absolute;inset:0;width:100%;height:100%;z-index:1;touch-action:none;pointer-events:none}
+body.drawing #vInk{pointer-events:all;cursor:crosshair}
+#fsVidCtl{position:absolute;z-index:2;top:10px;left:10px;right:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:6px 8px;border-radius:12px;background:rgba(0,0,0,.55)}
+#fsVidCtl .btn{min-height:40px;padding:0 10px}
+#fsVidCtl input[type=range]{flex:1 1 120px;min-width:90px;min-height:32px}
+#fsVTime{color:#fff;font-variant-numeric:tabular-nums;font-size:14px}
+body.viewer .vid{display:none}
+.vid{display:grid;gap:10px}
+.drop{display:flex;align-items:center;justify-content:center;text-align:center;min-height:84px;padding:14px;border:2px dashed var(--line);border-radius:14px;color:var(--muted);cursor:pointer}
+.drop.over{border-color:var(--accent);color:var(--fg)}
+.vidbox{display:grid;gap:8px}
+.vidbox[hidden]{display:none}
+.vidhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:600}
+.vidhead .grow{flex:1}
+.vidbox video{width:100%;max-height:60vh;background:#000;border-radius:10px}
+.vidbox input[type=range]{width:100%;min-height:36px}
+.vidctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.vidt{font-variant-numeric:tabular-nums;color:var(--muted);margin-left:auto}
+.vidbox.pip{position:fixed;z-index:60;right:48px;bottom:16px;width:min(440px,56vw);padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--panel);box-shadow:0 10px 36px rgba(0,0,0,.45)}
+.vidbox.pip video{max-height:32vh}
+.vidbox.pip .vidhead{cursor:grab;touch-action:none}
 html,body{touch-action:pan-y;-webkit-text-size-adjust:100%}
 button,label,summary,select{touch-action:manipulation}
 input,textarea,select{font-size:max(16px,1em)}
@@ -204,6 +233,7 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <button type="button" class="btn" id="fsEdit" aria-pressed="false">Modifier</button>
       <button type="button" class="btn" id="fsPen" aria-pressed="false">Stylo</button>
       <button type="button" class="btn" id="fsLib">Bibliothèque</button>
+      <button type="button" class="btn" id="fsVid">Schéma</button>
       <button type="button" class="btn" id="fsView">Terrain entier</button>
       <button type="button" class="btn" id="fsExit" aria-label="Quitter le plein écran">Quitter</button>
     </div>
@@ -246,6 +276,19 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <g id="ballLayer"></g>
       <g id="ink"><rect id="inkCap" x="-80" y="-80" width="260" height="260" fill="transparent"/><g id="inkStrokes" style="pointer-events:none"></g></g>
     </svg>
+    <div id="fsVidWrap">
+      <svg id="vInk" aria-hidden="true"><g id="vInkS"></g></svg>
+      <div id="fsVidCtl">
+        <button type="button" class="btn" data-vs="-2">&minus;2 s</button>
+        <button type="button" class="btn" data-vs="-0.2">&minus;0,2</button>
+        <button type="button" class="btn primary" id="fsVPlay">Lecture</button>
+        <button type="button" class="btn" data-vs="0.2">+0,2</button>
+        <button type="button" class="btn" data-vs="2">+2 s</button>
+        <button type="button" class="btn" id="fsVRate">×1</button>
+        <input type="range" id="fsVSeek" min="0" max="1000" value="0" aria-label="Position dans la vidéo">
+        <span id="fsVTime">0:00,0</span>
+      </div>
+    </div>
   </section>
 
   <section class="panel deck" aria-label="Étapes et lecture">
@@ -275,6 +318,30 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <span><i class="dot b"></i>Ballon (dépose-le sur une joueuse pour qu'elle le porte)</span>
     </div>
   </section>
+  <section class="panel vid" id="vidPanel" aria-label="Vidéo import">
+    <div class="libhead"><h2>Vidéo import</h2></div>
+    <p class="hint" id="vidHint">Dépose une vidéo de match ou d'entraînement : elle reste sur ton appareil (rien n'est envoyé). Regarde-la au ralenti, puis reproduis chaque moment clé sur le terrain avec « + Étape ».</p>
+    <label class="drop" id="vidDrop" for="vidFile">
+      <input type="file" id="vidFile" accept="video/*" hidden>
+      <span id="vidDropT">Touche ici pour choisir une vidéo, ou dépose-la</span>
+    </label>
+    <div class="vidbox" id="vidBox" hidden>
+      <div class="vidhead" id="vidDrag"><span id="vidName"></span><span class="grow"></span><button type="button" class="btn" id="vidPin" aria-pressed="false">Détacher</button><button type="button" class="btn" id="vidClose">Retirer</button></div>
+      <video id="vid" playsinline preload="metadata"></video>
+      <input type="range" id="vidSeek" min="0" max="1000" value="0" aria-label="Position dans la vidéo">
+      <div class="vidctl">
+        <button type="button" class="btn" data-seek="-2">&minus;2 s</button>
+        <button type="button" class="btn" data-seek="-0.2">&minus;0,2 s</button>
+        <button type="button" class="btn primary" id="vidPlay">Lecture</button>
+        <button type="button" class="btn" data-seek="0.2">+0,2 s</button>
+        <button type="button" class="btn" data-seek="2">+2 s</button>
+        <button type="button" class="btn" id="vidRate">Vitesse ×1</button>
+        <span class="vidt" id="vidTime">0:00,0</span>
+      </div>
+      <button type="button" class="btn primary" id="vidStep">+ Étape sur le terrain (position actuelle)</button>
+    </div>
+  </section>
+
   <section class="panel lib" aria-label="Bibliothèque d'actions">
     <div class="libhead">
       <h2>Bibliothèque</h2>
@@ -405,14 +472,19 @@ if(!Array.isArray(S.defLabels)||S.defLabels.length!==6)S.defLabels=FORMS['0-6'].
 
 var svg=$('#board'), gHalf=$('#gHalf'), gFull=$('#gFull'), trailsG=$('#trails'), tokLayer=$('#tokens'), ballLayer=$('#ballLayer');
 var noteEl=$('#note'), hintEl=$('#hint'), stepsEl=$('#steps'), btnPlay=$('#btnPlay');
-var pathSel=null, curveDrag=null, fsEdit=false;
+var pathSel=null, curveDrag=null, fsEdit=false, fsLayout='schema';
 function canEdit(){return !fsOn||fsEdit;}
 var playing=false, raf=0, t0=0, anim=null, drag=null, pausedAt=0;
 var fsPlay=$('#fsPlay'), fsPause=$('#fsPause');
 
 function rad(){return S.mode==='full'?1.0:0.95;}
-function rotHalf(){return S.mode==='half'&&fsOn&&window.innerHeight>window.innerWidth;}
-function rot(){return S.mode==='full'&&window.innerHeight>window.innerWidth;}
+function paneDims(){
+  var w=window.innerWidth,h=window.innerHeight;
+  if(fsOn&&fsLayout==='split'){if(h>w)h=h/2;else w=w/2;}
+  return {w:w,h:h};
+}
+function rotHalf(){var d=paneDims();return S.mode==='half'&&fsOn&&d.h>d.w;}
+function rot(){var d=paneDims();return S.mode==='full'&&d.h>d.w;}
 /* coordonnées terrain (mètres, but d'attaque en x=40) -> coordonnées d'affichage */
 function V(x,y){
   if(S.mode==='half')return rotHalf()?[x-20,y*HS]:[y*HS,40-x];
@@ -494,7 +566,7 @@ function setMode(){
     gFull.removeAttribute('transform');
   }
   var nvb=svg.getAttribute('viewBox')+S.mode;
-  if(inkVB&&nvb!==inkVB)inkClear();
+  if(inkVB&&nvb!==inkVB)inkClearBoard();
   inkVB=nvb;
   setRadius();
   Array.prototype.forEach.call(document.querySelectorAll('#segMode button'),function(b){b.setAttribute('aria-pressed',String(b.dataset.v===S.mode));});
@@ -802,7 +874,9 @@ $('#pathOk').addEventListener('click',closePath);
 /* stylo */
 var inkOn=false, inkColor='#e53935', inkCur=null, inkVB='';
 var inkG=$('#ink'), inkS=$('#inkStrokes'), inkCap=$('#inkCap');
-function inkClear(){inkS.innerHTML='';inkCur=null;}
+var inkStack=[], vInkS=$('#vInkS');
+function inkClearBoard(){inkS.innerHTML='';inkStack=inkStack.filter(function(x){return x.parentNode;});inkCur=null;}
+function inkClear(){inkS.innerHTML='';vInkS.innerHTML='';inkStack=[];inkCur=null;}
 function inkSet(on){
   inkOn=on&&fsOn;
   inkG.classList.toggle('on',inkOn);
@@ -824,7 +898,7 @@ inkCap.addEventListener('pointerdown',function(e){
   var p=document.createElementNS(NS,'polyline');
   p.setAttribute('fill','none');p.setAttribute('stroke',inkColor);p.setAttribute('stroke-width',w);
   p.setAttribute('stroke-linecap','round');p.setAttribute('stroke-linejoin','round');
-  p.setAttribute('points',inkPt(e));inkS.appendChild(p);inkCur=p;
+  p.setAttribute('points',inkPt(e));inkS.appendChild(p);inkStack.push(p);inkCur=p;
 });
 inkCap.addEventListener('pointermove',function(e){
   if(!inkCur)return;e.preventDefault();
@@ -842,7 +916,7 @@ $('#fsPen').addEventListener('click',function(){
   if($('#fsInk').hidden){inkBar(true);return;}
   inkSet(false);
 });
-$('#inkUndo').addEventListener('click',function(){if(inkS.lastChild)inkS.removeChild(inkS.lastChild);});
+$('#inkUndo').addEventListener('click',function(){while(inkStack.length){var x=inkStack.pop();if(x.parentNode){x.parentNode.removeChild(x);break;}}});
 $('#inkClear').addEventListener('click',inkClear);
 Array.prototype.forEach.call(document.querySelectorAll('.sw'),function(b){
   b.addEventListener('click',function(){
@@ -892,7 +966,7 @@ var stageEl=$('#stage'), fsOn=false;
 function fsElement(){return document.fullscreenElement||document.webkitFullscreenElement;}
 function setFs(on){
   fsOn=on;
-  if(!on){if(fsEdit)endEdit();inkSet(false);inkClear();}
+  if(!on){if(fsEdit)endEdit();inkSet(false);inkClear();fsVidLeave();}else{fsVidEnter();}
   $('#fsLibPanel').hidden=true;
   stageEl.classList.toggle('fs',on);
   document.body.style.overflow=on?'hidden':'';
@@ -1446,6 +1520,142 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
   if('ResizeObserver' in window){try{new ResizeObserver(upd).observe(document.body);}catch(_){}}
   setInterval(upd,1000);
   upd();
+})();
+
+/* vidéo import */
+(function(){
+  var vid=$('#vid'),box=$('#vidBox'),fileIn=$('#vidFile'),drop=$('#vidDrop'),seek=$('#vidSeek'),url=null,rates=[1,0.5,0.25],ri=0;
+  function fmt(s){var m=Math.floor(s/60),r=s-m*60;return m+':'+(r<10?'0':'')+r.toFixed(1).replace('.',',');}
+  function load(f){
+    if(!f)return;
+    if(f.type&&f.type.indexOf('video')!==0&&!/\.(mp4|mov|m4v|webm)$/i.test(f.name)){$('#vidHint').textContent="Ce fichier n'est pas une vidéo.";return;}
+    if(url)URL.revokeObjectURL(url);
+    url=URL.createObjectURL(f);vid.src=url;vid.playbackRate=1;ri=0;$('#vidRate').textContent='Vitesse ×1';
+    $('#vidName').textContent=f.name;box.hidden=false;drop.hidden=true;
+    document.dispatchEvent(new CustomEvent('vidloaded'));
+    $('#vidHint').textContent="Mets la vidéo en pause sur un moment clé, place les joueuses sur le terrain, puis touche « + Étape ». Tu peux détacher la vidéo pour la garder visible en travaillant.";
+  }
+  fileIn.addEventListener('change',function(){load(fileIn.files&&fileIn.files[0]);fileIn.value='';});
+  ['dragenter','dragover'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.add('over');});});
+  ['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.remove('over');});});
+  drop.addEventListener('drop',function(e){load(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]);});
+  vid.addEventListener('loadedmetadata',function(){seek.max=String(Math.round((vid.duration||0)*10));});
+  vid.addEventListener('timeupdate',function(){
+    $('#vidTime').textContent=fmt(vid.currentTime)+' / '+fmt(vid.duration||0);
+    seek.value=String(Math.round(vid.currentTime*10));
+  });
+  vid.addEventListener('play',function(){$('#vidPlay').textContent='Pause';});
+  vid.addEventListener('pause',function(){$('#vidPlay').textContent='Lecture';});
+  vid.addEventListener('error',function(){$('#vidHint').textContent="Impossible de lire cette vidéo sur cet appareil. Essaie un fichier .mp4 ou .mov.";});
+  seek.addEventListener('input',function(){vid.currentTime=parseInt(seek.value,10)/10;});
+  $('#vidPlay').addEventListener('click',function(){if(vid.paused)vid.play();else vid.pause();});
+  Array.prototype.forEach.call(box.querySelectorAll('[data-seek]'),function(b){
+    b.addEventListener('click',function(){vid.pause();vid.currentTime=Math.max(0,Math.min(vid.duration||0,vid.currentTime+parseFloat(b.getAttribute('data-seek'))));});
+  });
+  $('#vidRate').addEventListener('click',function(){ri=(ri+1)%rates.length;vid.playbackRate=rates[ri];this.textContent='Vitesse ×'+String(rates[ri]).replace('.',',');});
+  $('#vidStep').addEventListener('click',function(){
+    vid.pause();$('#btnAdd').click();
+    $('#vidHint').textContent='Étape '+S.frames.length+' ajoutée à '+fmt(vid.currentTime)+'. Déplace maintenant les joueuses pour qu\'elles correspondent à la vidéo.';
+  });
+  $('#vidClose').addEventListener('click',function(){
+    vid.pause();vid.removeAttribute('src');vid.load();if(url){URL.revokeObjectURL(url);url=null;}
+    box.hidden=true;box.classList.remove('pip');box.style.cssText='';$('#vidPin').textContent='Détacher';$('#vidPin').setAttribute('aria-pressed','false');
+    drop.hidden=false;$('#vidHint').textContent="Dépose une vidéo de match ou d'entraînement : elle reste sur ton appareil (rien n'est envoyé).";
+  });
+  $('#vidPin').addEventListener('click',function(){
+    var on=!box.classList.contains('pip');
+    box.classList.toggle('pip',on);box.style.cssText='';
+    this.textContent=on?'Replacer':'Détacher';this.setAttribute('aria-pressed',String(on));
+  });
+  var dx=0,dy=0,mv=false;
+  $('#vidDrag').addEventListener('pointerdown',function(e){
+    if(!box.classList.contains('pip')||e.target.closest('button'))return;
+    var r=box.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;mv=true;
+    try{this.setPointerCapture(e.pointerId);}catch(_){}
+  });
+  $('#vidDrag').addEventListener('pointermove',function(e){
+    if(!mv)return;
+    box.style.right='auto';box.style.bottom='auto';
+    box.style.left=Math.max(0,Math.min(window.innerWidth-120,e.clientX-dx))+'px';
+    box.style.top=Math.max(0,Math.min(window.innerHeight-80,e.clientY-dy))+'px';
+  });
+  $('#vidDrag').addEventListener('pointerup',function(){mv=false;});
+  $('#vidDrag').addEventListener('pointercancel',function(){mv=false;});
+})();
+
+/* vidéo en plein écran */
+var fsVidHome=null;
+function vidLoaded(){return !$('#vidBox').hidden&&!!$('#vid').getAttribute('src');}
+function fsVidEnter(){
+  var v=$('#vid');fsVidHome=v.parentNode;
+  var was=!v.paused;
+  $('#fsVidWrap').insertBefore(v,$('#vInk'));
+  if(was)v.play();
+  setLayout('schema',true);
+}
+function fsVidLeave(){
+  var v=$('#vid');
+  if(fsVidHome&&v.parentNode!==fsVidHome){
+    var was=!v.paused;
+    fsVidHome.insertBefore(v,$('#vidSeek'));
+    if(was)v.play();
+  }
+  setLayout('schema',true);
+}
+var LAYOUT_LABEL={schema:'Schéma',split:'Schéma + vidéo',vonly:'Vidéo'};
+function setLayout(l,quiet){
+  fsLayout=l;
+  stageEl.classList.toggle('split',l==='split');
+  stageEl.classList.toggle('vonly',l==='vonly');
+  stageEl.classList.toggle('splitcol',window.innerHeight>window.innerWidth);
+  $('#fsVid').textContent=LAYOUT_LABEL[l];
+  if(l==='vonly'){closePath();}
+  setMode();update();drawTrails();
+}
+window.addEventListener('resize',function(){
+  if(!fsOn)return;
+  stageEl.classList.toggle('splitcol',window.innerHeight>window.innerWidth);
+  setTimeout(function(){setMode();update();drawTrails();},60);
+});
+$('#fsVid').addEventListener('click',function(){
+  if(!vidLoaded()){
+    fsToast('Choisis une vidéo : elle s\'affichera à côté du schéma.');
+    pendingSplit=true;$('#vidFile').click();return;
+  }
+  setLayout(fsLayout==='schema'?'split':fsLayout==='split'?'vonly':'schema');
+});
+var pendingSplit=false;
+document.addEventListener('vidloaded',function(){
+  if(fsOn&&pendingSplit){pendingSplit=false;fsVidEnter();setLayout('split');}
+});
+(function(){
+  var v=$('#vid'),sk=$('#fsVSeek'),rates=[1,0.5,0.25],ri=0;
+  function fmt(s){var m=Math.floor(s/60),r=s-m*60;return m+':'+(r<10?'0':'')+r.toFixed(1).replace('.',',');}
+  v.addEventListener('loadedmetadata',function(){sk.max=String(Math.round((v.duration||0)*10));});
+  v.addEventListener('timeupdate',function(){$('#fsVTime').textContent=fmt(v.currentTime);sk.value=String(Math.round(v.currentTime*10));});
+  v.addEventListener('play',function(){$('#fsVPlay').textContent='Pause';vInkS.innerHTML='';});
+  v.addEventListener('pause',function(){$('#fsVPlay').textContent='Lecture';});
+  v.addEventListener('seeking',function(){vInkS.innerHTML='';});
+  sk.addEventListener('input',function(){v.currentTime=parseInt(sk.value,10)/10;});
+  $('#fsVPlay').addEventListener('click',function(){if(v.paused)v.play();else v.pause();});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-vs]'),function(b){
+    b.addEventListener('click',function(){v.pause();v.currentTime=Math.max(0,Math.min(v.duration||0,v.currentTime+parseFloat(b.getAttribute('data-vs'))));});
+  });
+  $('#fsVRate').addEventListener('click',function(){ri=(ri+1)%rates.length;v.playbackRate=rates[ri];this.textContent='×'+String(rates[ri]).replace('.',',');});
+  // stylo sur la vidéo
+  var vi=$('#vInk'),cur=null;
+  function vpt(e){var r=vi.getBoundingClientRect();return Math.round(e.clientX-r.left)+','+Math.round(e.clientY-r.top);}
+  vi.addEventListener('pointerdown',function(e){
+    if(!inkOn)return;e.preventDefault();
+    try{vi.setPointerCapture(e.pointerId);}catch(_){}
+    var p=document.createElementNS(NS,'polyline');
+    p.setAttribute('fill','none');p.setAttribute('stroke',inkColor);p.setAttribute('stroke-width','5');
+    p.setAttribute('stroke-linecap','round');p.setAttribute('stroke-linejoin','round');
+    p.setAttribute('points',vpt(e)+' '+vpt(e));vInkS.appendChild(p);inkStack.push(p);cur=p;
+  });
+  vi.addEventListener('pointermove',function(e){if(!cur)return;e.preventDefault();cur.setAttribute('points',cur.getAttribute('points')+' '+vpt(e));});
+  function end(){cur=null;}
+  vi.addEventListener('pointerup',end);vi.addEventListener('pointercancel',end);
 })();
 
 /* pas de zoom */
