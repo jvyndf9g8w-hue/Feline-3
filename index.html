@@ -77,18 +77,25 @@ select{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius
 .fslibhead strong{font:700 22px/1 var(--disp);letter-spacing:.02em;text-transform:uppercase}
 .fslib .liblist{overflow:auto;min-height:0}
 body.viewer #fsLib{display:none}
+.stage.fs .fsctl{gap:5px;padding:5px 6px;border-radius:12px;bottom:max(8px,env(safe-area-inset-bottom,0px))}
+.stage.fs .fsctl .btn{min-height:34px;padding:0 9px;font-size:14px;border-radius:9px}
+.stage.fs .fsctl #fsPlay,.stage.fs .fsctl #fsPause{gap:5px}
+.stage.fs .fsctl svg{width:15px;height:15px}
+.stage.fs .fsctl .fsstep{font-size:14px;min-width:64px;padding:0 4px}
+.stage.fs .fsctl #fsNext,.stage.fs .fsctl #fsPrev{min-width:34px;padding:0 8px}
 body.viewer #fsVid{display:none}
 #fsVidWrap{display:none}
-.stage.fs.split #fsVidWrap,.stage.fs.vonly #fsVidWrap{display:block;position:relative;flex:1 1 0;min-width:0;min-height:0;background:#000;overflow:hidden}
+.stage.fs.split #fsVidWrap,.stage.fs.vonly #fsVidWrap{display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:6px;position:relative;flex:1 1 0;min-width:0;min-height:0;background:#000;overflow:hidden;padding:6px 6px 58px}
+#vstage{position:relative;width:100%}
 .stage.fs.split{flex-direction:row}
 .stage.fs.split.splitcol{flex-direction:column}
 .stage.fs.split svg#board{flex:1 1 0;width:auto;height:auto;min-width:0;min-height:0}
 .stage.fs.vonly svg#board{display:none}
-#fsVidWrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+#fsVidWrap video{display:block;width:100%;height:auto;max-height:calc(100vh - 130px);object-fit:contain;background:#000}
 #vInk{position:absolute;inset:0;width:100%;height:100%;z-index:1;touch-action:none;pointer-events:none}
 body.drawing #vInk{pointer-events:all;cursor:crosshair}
-#fsVidCtl{position:absolute;z-index:2;top:10px;left:10px;right:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:6px 8px;border-radius:12px;background:rgba(0,0,0,.55)}
-#fsVidCtl .btn{min-height:40px;padding:0 10px}
+#fsVidCtl{position:relative;z-index:2;display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;padding:4px 6px;border-radius:10px;background:rgba(255,255,255,.08)}
+#fsVidCtl .btn{min-height:34px;padding:0 9px;font-size:14px}
 #fsVidCtl input[type=range]{flex:1 1 120px;min-width:90px;min-height:32px}
 #fsVTime{color:#fff;font-variant-numeric:tabular-nums;font-size:14px}
 body.viewer .vid{display:none}
@@ -127,9 +134,9 @@ body{padding-right:max(46px,calc(34px + env(safe-area-inset-right,0px)))}
 .pathp[hidden]{display:none}
 .pathp strong{font:700 17px/1 var(--disp);letter-spacing:.03em;padding:0 4px}
 .pathp .btn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
-.stage.fs .pathp{bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 74px)}
-.stage.fs .fsink:not([hidden]){display:flex;position:absolute;z-index:4;left:0;right:0;margin-inline:auto;width:fit-content;max-width:calc(100% - 24px);bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 74px);gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 12px;border-radius:14px;border:1px solid var(--line);background:var(--panel)}
-.sw{width:40px;height:40px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px var(--line);padding:0}
+.stage.fs .pathp{bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 52px)}
+.stage.fs .fsink:not([hidden]){display:flex;position:absolute;z-index:4;left:0;right:0;margin-inline:auto;width:fit-content;max-width:calc(100% - 24px);bottom:calc(max(12px,env(safe-area-inset-bottom,0px)) + 52px);gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:8px 12px;border-radius:14px;border:1px solid var(--line);background:var(--panel)}
+.sw{width:34px;height:34px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px var(--line);padding:0}
 .sw[aria-pressed="true"]{border-color:var(--fg);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--accent)}
 #ink{display:none}
 #ink.on{display:block}
@@ -277,7 +284,7 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <g id="ink"><rect id="inkCap" x="-80" y="-80" width="260" height="260" fill="transparent"/><g id="inkStrokes" style="pointer-events:none"></g></g>
     </svg>
     <div id="fsVidWrap">
-      <svg id="vInk" aria-hidden="true"><g id="vInkS"></g></svg>
+      <div id="vstage"><svg id="vInk" aria-hidden="true"><g id="vInkS"></g></svg></div>
       <div id="fsVidCtl">
         <button type="button" class="btn" data-vs="-2">&minus;2 s</button>
         <button type="button" class="btn" data-vs="-0.2">&minus;0,2</button>
@@ -483,7 +490,7 @@ function paneDims(){
   if(fsOn&&fsLayout==='split'){if(h>w)h=h/2;else w=w/2;}
   return {w:w,h:h};
 }
-function rotHalf(){var d=paneDims();return S.mode==='half'&&fsOn&&d.h>d.w;}
+function rotHalf(){var d=paneDims();return S.mode==='half'&&fsOn&&fsLayout!=='split'&&d.h>d.w;}
 function rot(){var d=paneDims();return S.mode==='full'&&d.h>d.w;}
 /* coordonnées terrain (mètres, but d'attaque en x=40) -> coordonnées d'affichage */
 function V(x,y){
@@ -1589,7 +1596,7 @@ function vidLoaded(){return !$('#vidBox').hidden&&!!$('#vid').getAttribute('src'
 function fsVidEnter(){
   var v=$('#vid');fsVidHome=v.parentNode;
   var was=!v.paused;
-  $('#fsVidWrap').insertBefore(v,$('#vInk'));
+  $('#vstage').insertBefore(v,$('#vInk'));
   if(was)v.play();
   setLayout('schema',true);
 }
