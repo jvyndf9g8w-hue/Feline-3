@@ -78,14 +78,19 @@ select{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius
 .fslib .liblist{overflow:auto;min-height:0}
 body.viewer #fsLib{display:none}
 .stage.fs .fsctl{gap:5px;padding:5px 6px;border-radius:12px;bottom:max(8px,env(safe-area-inset-bottom,0px))}
-.stage.fs .fsctl .btn{min-height:34px;padding:0 9px;font-size:14px;border-radius:9px}
+.stage.fs .fsctl .btn{white-space:nowrap;min-height:34px;padding:0 9px;font-size:14px;border-radius:9px}
 .stage.fs .fsctl #fsPlay,.stage.fs .fsctl #fsPause{gap:5px}
 .stage.fs .fsctl svg{width:15px;height:15px}
 .stage.fs .fsctl .fsstep{font-size:14px;min-width:64px;padding:0 4px}
 .stage.fs .fsctl #fsNext,.stage.fs .fsctl #fsPrev{min-width:34px;padding:0 8px}
 body.viewer #fsVid{display:none}
+body.viewer #fsConv{display:none}
+#fsConv{display:none}
+.stage.fs.split #fsConv,.stage.fs.vonly #fsConv{display:inline-flex}
+.auto.fsauto{position:absolute;z-index:9;inset:0;overflow:auto;background:var(--panel,#1b1f24);padding:14px 14px 80px;border:0;border-radius:0;align-content:start}
+.auto.fsauto #autoCv,.auto.fsauto #teamCv{width:auto;max-width:100%;max-height:calc(100vh - 250px);margin:0 auto}
 #fsVidWrap{display:none}
-.stage.fs.split #fsVidWrap,.stage.fs.vonly #fsVidWrap{display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:6px;position:relative;flex:1 1 0;min-width:0;min-height:0;background:#000;overflow:hidden;padding:6px 6px calc(max(8px,env(safe-area-inset-bottom,0px)) + var(--fsbarh,46px) + 10px)}
+.stage.fs.split #fsVidWrap,.stage.fs.vonly #fsVidWrap{display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:0;position:relative;flex:1 1 0;min-width:0;min-height:0;background:#000;overflow:hidden;padding:6px 6px calc(max(8px,env(safe-area-inset-bottom,0px)) + var(--fsbarh,46px) + 10px)}
 #vstage{position:relative;width:100%}
 .stage.fs.split{flex-direction:row}
 .stage.fs.split.splitcol{flex-direction:column}
@@ -94,11 +99,11 @@ body.viewer #fsVid{display:none}
 #fsVidWrap video{display:block;width:100%;height:auto;max-height:calc(100vh - 130px);object-fit:contain;background:#000}
 #vInk{position:absolute;inset:0;width:100%;height:100%;z-index:1;touch-action:none;pointer-events:none}
 body.drawing #vInk{pointer-events:all;cursor:crosshair}
-#fsVidCtl{position:relative;z-index:2;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;padding:4px 6px;border-radius:0 0 10px 10px;background:#1b1b1b;color:#f5a623}
+#fsVidCtl{position:relative;z-index:2;display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap;padding:0 0 4px;border-radius:0 0 10px 10px;background:#1b1b1b;color:#f5a623}
 #fsVidCtl .vb{flex:0 0 auto;min-width:36px;height:40px;padding:0 4px;border:0;border-radius:8px;background:transparent;color:#f5a623;display:inline-flex;align-items:center;justify-content:center;font:700 15px/1 var(--disp,inherit)}
 #fsVidCtl .vb:active{background:rgba(245,166,35,.25)}
 #fsVidCtl .vb svg{width:26px;height:26px}
-#fsVScrub{flex:1 1 140px;min-width:120px;position:relative;height:46px;touch-action:none;cursor:pointer;user-select:none;-webkit-user-select:none}
+#fsVScrub{flex:1 1 100%;order:-1;min-width:0;position:relative;height:46px;touch-action:none;cursor:pointer;user-select:none;-webkit-user-select:none}
 #fsVRuler{position:absolute;inset:0;width:100%;height:100%}
 #fsVHead{position:absolute;top:2px;bottom:2px;width:3px;margin-left:-1.5px;background:#fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.5);pointer-events:none}
 #fsVHead::before{content:"";position:absolute;top:-2px;left:-5px;width:13px;height:9px;background:#fff;border-radius:3px}
@@ -107,10 +112,14 @@ body.drawing #vInk{pointer-events:all;cursor:crosshair}
 #fsVTime{position:absolute;z-index:2;left:6px;bottom:6px;padding:4px 10px;border-radius:8px;background:rgba(0,0,0,.6);color:#fff;font:700 22px/1 ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;pointer-events:none}
 body.viewer .vid{display:none}
 .auto{display:grid;gap:10px;padding:12px;border:1px solid var(--line);border-radius:14px}
-.auto[hidden],#autoCfg[hidden],#autoCalBox[hidden],#autoRun[hidden],#autoTeam[hidden]{display:none}
+.auto[hidden],#autoMan[hidden],#autoCfg[hidden],#autoCalBox[hidden],#autoRun[hidden],#autoTeam[hidden]{display:none}
 .autohead{display:flex;gap:8px;align-items:center}.autohead .grow{flex:1}
 .autorow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .autorow select{min-height:40px}
+#manCv{width:100%;height:auto;touch-action:none;border-radius:10px;background:#000;cursor:crosshair}
+.auto.fsauto #manCv{width:auto;max-width:100%;max-height:calc(100vh - 300px);margin:0 auto}
+#autoMan[hidden]{display:none}
+#autoMan{display:grid;gap:10px}
 #autoCv,#teamCv{width:100%;height:auto;touch-action:none;border-radius:10px;background:#000;cursor:crosshair}
 .vid{display:grid;gap:10px}
 .drop{display:flex;align-items:center;justify-content:center;text-align:center;min-height:84px;padding:14px;border:2px dashed var(--line);border-radius:14px;color:var(--muted);cursor:pointer}
@@ -119,7 +128,7 @@ body.viewer .vid{display:none}
 .vidbox[hidden]{display:none}
 .vidhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:600}
 .vidhead .grow{flex:1}
-.vidbox video{width:100%;max-height:60vh;background:#000;border-radius:10px}
+.vidbox video{display:block;width:100%;min-height:200px;max-height:60vh;background:#000;border-radius:10px}
 .vidbox input[type=range]{width:100%;min-height:36px}
 .vidctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .vidt{font-variant-numeric:tabular-nums;color:var(--muted);margin-left:auto}
@@ -254,6 +263,7 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <button type="button" class="btn" id="fsPen" aria-pressed="false">Stylo</button>
       <button type="button" class="btn" id="fsLib">Bibliothèque</button>
       <button type="button" class="btn" id="fsVid">Schéma</button>
+      <button type="button" class="btn" id="fsConv">Convertir</button>
       <button type="button" class="btn" id="fsView">Terrain entier</button>
       <button type="button" class="btn" id="fsExit" aria-label="Quitter le plein écran">Quitter</button>
     </div>
@@ -299,6 +309,11 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
     <div id="fsVidWrap">
       <div id="vstage"><svg id="vInk" aria-hidden="true"><g id="vInkS"></g></svg><span id="fsVTime">00:00.00</span></div>
       <div id="fsVidCtl">
+        <div id="fsVScrub" role="slider" aria-label="Position dans la vidéo" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+          <canvas id="fsVRuler"></canvas>
+          <div id="fsVHead"></div>
+          <div id="fsVTip" hidden></div>
+        </div>
         <button type="button" class="vb" id="fsVPlay" aria-label="Lecture / pause"></button>
         <button type="button" class="vb" id="fsVRate" aria-label="Vitesse">1/1</button>
         <button type="button" class="vb" data-vf="-1" aria-label="Image précédente"><svg viewBox="0 0 24 24"><path d="M4 5v14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M20 5v14L8 12z" fill="currentColor"/></svg></button>
@@ -307,11 +322,6 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
         <button type="button" class="vb" data-vs="-2" aria-label="Reculer de 2 secondes"></button>
         <button type="button" class="vb" data-vs="2" aria-label="Avancer de 2 secondes"></button>
         <button type="button" class="vb" data-vs="5" aria-label="Avancer de 5 secondes"></button>
-        <div id="fsVScrub" role="slider" aria-label="Position dans la vidéo" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
-          <canvas id="fsVRuler"></canvas>
-          <div id="fsVHead"></div>
-          <div id="fsVTip" hidden></div>
-        </div>
       </div>
     </div>
   </section>
@@ -375,7 +385,11 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
           <label>Un point toutes les <select id="autoStep"><option value="0.5" selected>0,5 s</option><option value="0.75">0,75 s</option><option value="1">1 s</option></select></label>
         </div>
         <p class="hint">Mets d'abord la vidéo en pause sur l'instant de départ (les joueuses doivent être visibles sur le demi-terrain attaqué).</p>
-        <button type="button" class="btn primary" id="autoGo1">Suivant : repérer le terrain</button>
+        <div class="autorow">
+          <button type="button" class="btn primary" id="autoGo1">Détection automatique</button>
+          <button type="button" class="btn primary" id="autoGoMan">Pointage manuel (4 angles + têtes)</button>
+        </div>
+        <p class="hint">Pointage manuel : tu repères les 4 angles du demi-terrain, puis tu touches la tête des 6 attaquantes, des 6 défenseuses et le ballon. L'appli en déduit leurs positions et crée l'étape.</p>
       </div>
       <div id="autoCalBox" hidden>
         <p id="calMsg" class="hint"></p>
@@ -384,6 +398,22 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
         <div class="autorow">
           <button type="button" class="btn" id="calReset">Recommencer les points</button>
           <button type="button" class="btn primary" id="calOk" disabled>Lancer la détection</button>
+        </div>
+      </div>
+      <div id="autoMan" hidden>
+        <p id="manMsg" class="hint"></p>
+        <canvas id="manCv" aria-label="Pointage des joueuses"></canvas>
+        <div class="autorow">
+          <button type="button" class="btn" id="manSkip">Passer</button>
+          <button type="button" class="btn" id="manUndo">Annuler le dernier</button>
+          <button type="button" class="btn" id="manReset">Tout effacer</button>
+          <label>Hauteur des pieds <input type="range" id="manFoot" min="60" max="140" value="100" style="min-height:32px"></label>
+        </div>
+        <svg id="manPrev" viewBox="0 0 130 130" width="170" height="170" aria-hidden="true"></svg>
+        <div class="autorow" id="manDone" hidden>
+          <button type="button" class="btn primary" id="manAppend">Ajouter comme étape suivante</button>
+          <button type="button" class="btn" id="manNew">Nouvelle séquence avec cette étape</button>
+          <button type="button" class="btn" id="manRecal">Refaire les 4 angles</button>
         </div>
       </div>
       <div id="autoRun" hidden>
@@ -1608,7 +1638,7 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
     if(!f)return;
     if(f.type&&f.type.indexOf('video')!==0&&!/\.(mp4|mov|m4v|webm)$/i.test(f.name)){$('#vidHint').textContent="Ce fichier n'est pas une vidéo.";return;}
     if(url)URL.revokeObjectURL(url);
-    url=URL.createObjectURL(f);vid.src=url;vid.playbackRate=1;ri=0;$('#vidRate').textContent='Vitesse ×1';
+    url=URL.createObjectURL(f);vid.preload='auto';vid.src=url+'#t=0.05';vid.playbackRate=1;ri=0;$('#vidRate').textContent='Vitesse ×1';
     $('#vidName').textContent=f.name;box.hidden=false;drop.hidden=true;
     document.dispatchEvent(new CustomEvent('vidloaded'));
     $('#vidHint').textContent="Mets la vidéo en pause sur un moment clé, place les joueuses sur le terrain, puis touche « + Étape ». Tu peux détacher la vidéo pour la garder visible en travaillant.";
@@ -1617,6 +1647,7 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
   ['dragenter','dragover'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.add('over');});});
   ['dragleave','drop'].forEach(function(n){drop.addEventListener(n,function(e){e.preventDefault();drop.classList.remove('over');});});
   drop.addEventListener('drop',function(e){load(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]);});
+  vid.addEventListener('loadeddata',function(){try{if(vid.currentTime<0.05)vid.currentTime=0.05;}catch(_){}});
   vid.addEventListener('loadedmetadata',function(){seek.max=String(Math.round((vid.duration||0)*10));});
   vid.addEventListener('timeupdate',function(){
     $('#vidTime').textContent=fmt(vid.currentTime)+' / '+fmt(vid.duration||0);
@@ -1667,10 +1698,27 @@ if('ResizeObserver' in window){try{new ResizeObserver(setBarH).observe($('.fsctl
 window.addEventListener('resize',function(){setTimeout(setBarH,80);});
 
 /* vidéo en plein écran */
-var fsVidHome=null;
+var fsVidHome=null, autoHome=null, autoNext=null;
+function autoDockIn(){
+  var p=$('#autoPanel');
+  if(p.parentNode!==stageEl){autoHome=p.parentNode;autoNext=p.nextSibling;stageEl.appendChild(p);}
+  p.classList.add('fsauto');
+}
+function autoDockOut(){
+  var p=$('#autoPanel');
+  if(autoHome&&p.parentNode===stageEl)autoHome.insertBefore(p,autoNext);
+  p.classList.remove('fsauto');
+}
+$('#fsConv').addEventListener('click',function(){
+  if(!vidLoaded()){fsToast('Charge d\'abord une vidéo.');return;}
+  $('#vid').pause();
+  $('#autoStart').click();
+});
 function vidLoaded(){return !$('#vidBox').hidden&&!!$('#vid').getAttribute('src');}
 function fsVidEnter(){
-  var v=$('#vid');fsVidHome=v.parentNode;
+  var v=$('#vid');
+  if(v.parentNode.id==='vstage'){return;}
+  fsVidHome=v.parentNode;
   var was=!v.paused;
   $('#vstage').insertBefore(v,$('#vInk'));
   if(was)v.play();
@@ -1678,7 +1726,10 @@ function fsVidEnter(){
 }
 function fsVidLeave(){
   var v=$('#vid');
-  if(fsVidHome&&v.parentNode!==fsVidHome){
+  document.dispatchEvent(new CustomEvent('autoabort'));
+  $('#autoPanel').hidden=true;autoDockOut();
+  if(!fsVidHome)fsVidHome=$('#vidBox');
+  if(v.parentNode!==fsVidHome){
     var was=!v.paused;
     fsVidHome.insertBefore(v,$('#vidSeek'));
     if(was)v.play();
@@ -1712,6 +1763,7 @@ $('#fsVid').addEventListener('click',function(){
 var pendingSplit=false;
 document.addEventListener('vidloaded',function(){
   if(fsOn&&pendingSplit){pendingSplit=false;fsVidEnter();setLayout('split');}
+  else if(fsOn){fsVidEnter();}
 });
 (function(){
   var v=$('#vid'),rates=[1,0.5,0.25],rl=['1/1','1/2','1/4'],ri=0,sc=$('#fsVScrub'),head=$('#fsVHead'),tip=$('#fsVTip'),cv=$('#fsVRuler'),dragging=false,raf2=0,PAD=10;
@@ -1810,11 +1862,11 @@ document.addEventListener('vidloaded',function(){
 /* conversion automatique vidéo -> schéma */
 (function(){
   var v=$('#vid'),panel=$('#autoPanel'),cv=$('#autoCv'),ctx=cv.getContext('2d'),tcv=$('#teamCv'),tctx=tcv.getContext('2d');
-  var pts=[],drag=-1,cancelled=false,busy=false,cfg={dur:15,step:0.5,t0:0};
+  var pts=[],drag=-1,cancelled=false,busy=false,cfg={dur:15,step:0.5,t0:0},mode='auto',calDone=false,Hm=null;
   var LABELS=['①','②','③','④'];
   var DST=[[40,0],[40,20],[20,20],[20,0]];
   var MSG=['Touche le coin ① : le coin GAUCHE de la ligne de but (vu de dos des attaquantes, face au but).','Touche le coin ② : le coin DROIT de la ligne de but.','Touche le coin ③ : le coin de la ligne médiane, côté droit.','Touche le coin ④ : le coin de la ligne médiane, côté gauche.'];
-  function show(id){['autoCfg','autoCalBox','autoRun','autoTeam'].forEach(function(x){$('#'+x).hidden=(x!==id);});}
+  function show(id){['autoCfg','autoCalBox','autoRun','autoTeam','autoMan'].forEach(function(x){$('#'+x).hidden=(x!==id);});}
   function setTitle(s){$('#autoTitle').textContent=s;}
   function fmt(s){var m=Math.floor(s/60),r=s-m*60;return m+':'+(r<10?'0':'')+Math.round(r);}
   /* ---- homographie ---- */
@@ -2041,15 +2093,21 @@ document.addEventListener('vidloaded',function(){
   /* ---- déroulé ---- */
   $('#autoStart').addEventListener('click',function(){
     v.pause();panel.hidden=false;show('autoCfg');setTitle('Conversion automatique');cancelled=false;
-    try{panel.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(_){}
+    if(fsOn){autoDockIn();panel.scrollTop=0;}
+    else{try{panel.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(_){}}
   });
-  $('#autoCancel').addEventListener('click',function(){cancelled=true;panel.hidden=true;});
+  $('#autoCancel').addEventListener('click',function(){cancelled=true;panel.hidden=true;autoDockOut();});
+  document.addEventListener('autoabort',function(){cancelled=true;});
   $('#autoGo1').addEventListener('click',function(){
     cfg.dur=parseFloat($('#autoDur').value);cfg.step=parseFloat($('#autoStep').value);cfg.t0=v.currentTime;
+    mode='auto';$('#calOk').textContent='Lancer la détection';
     frameImg=grabFrame();fitCanvas(cv,frameImg);pts=[];
     show('autoCalBox');setTitle('1. Repérer le terrain');updCal();
   });
-  $('#calOk').addEventListener('click',function(){run();});
+  $('#calOk').addEventListener('click',function(){
+    if(mode==='man'){calDone=true;startManual();}else run();
+  });
+  document.addEventListener('vidloaded',function(){calDone=false;pts=[];});
   function run(){
     if(busy)return;busy=true;cancelled=false;
     var H=homography(pts,DST);
@@ -2084,6 +2142,115 @@ document.addEventListener('vidloaded',function(){
       $('#autoCfg .hint').textContent=(/script/.test(String(err&&err.message)))?'Impossible de charger le détecteur : vérifie ta connexion internet puis réessaie.':'La détection a échoué ('+(err&&err.message||'erreur')+'). Réessaie.';
     });
   }
+  /* ---- pointage manuel ---- */
+  var ITEMS=[['AG','Ailière gauche (AG)','A'],['ARG','Arrière gauche (ARG)','A'],['DC','Demi-centre (DC)','A'],['ARD','Arrière droite (ARD)','A'],['AD','Ailière droite (AD)','A'],['P','Pivot (P)','A'],
+    ['D1','Défenseuse 1 (extérieur gauche)','D'],['D2','Défenseuse 2 (gauche)','D'],['D3','Défenseuse 3 (centre gauche)','D'],['D4','Défenseuse 4 (centre droit)','D'],['D5','Défenseuse 5 (droite)','D'],['D6','Défenseuse 6 (extérieur droit)','D'],['BALL','le BALLON','B']];
+  var man=[],mdrag=-1,mimg=null,mcv=$('#manCv'),mctx=mcv.getContext('2d'),mt=0;
+  function footK(){return parseInt($('#manFoot').value,10)/100;}
+  function footOf(hx,hy,k){
+    var fy=hy+mcv.height*0.08,i;
+    for(i=0;i<4;i++){
+      var a=applyH(Hm,hx,fy),b=applyH(Hm,hx+1,fy),g=Math.hypot(b[0]-a[0],b[1]-a[1]);
+      if(!(g>0)||!isFinite(g))break;
+      var hp=1.75*0.92/g*k;fy=hy+Math.min(hp,mcv.height*0.45);
+    }
+    return [hx,fy];
+  }
+  function ground(hx,hy,item){
+    var f=item[0]==='BALL'?[hx,hy]:footOf(hx,hy,footK()),m=applyH(Hm,f[0],f[1]);
+    return {px:f,m:[Math.max(20.3,Math.min(40.4,m[0])),Math.max(-0.4,Math.min(20.4,m[1]))]};
+  }
+  function drawMan(){
+    mctx.drawImage(mimg,0,0);
+    var r=Math.max(8,mcv.width/110);
+    man.forEach(function(o,i){
+      if(o.skip)return;
+      var it=ITEMS[i],g=ground(o.hx,o.hy,it);
+      mctx.strokeStyle='rgba(255,255,255,.8)';mctx.lineWidth=2;
+      if(it[0]!=='BALL'){mctx.beginPath();mctx.moveTo(o.hx,o.hy);mctx.lineTo(g.px[0],g.px[1]);mctx.stroke();
+        mctx.beginPath();mctx.arc(g.px[0],g.px[1],r*0.45,0,7);mctx.fillStyle='#fff';mctx.fill();}
+      mctx.beginPath();mctx.arc(o.hx,o.hy,r,0,7);
+      mctx.fillStyle=it[2]==='A'?'#ffb020':it[2]==='D'?'#2f6bff':'#ffe600';mctx.fill();mctx.lineWidth=2;mctx.strokeStyle='#000';mctx.stroke();
+      mctx.fillStyle=it[2]==='D'?'#fff':'#000';mctx.font='bold '+Math.round(r*0.85)+'px sans-serif';mctx.textAlign='center';mctx.textBaseline='middle';
+      mctx.fillText(it[0]==='BALL'?'B':(it[2]==='D'?it[0].slice(1):it[0]),o.hx,o.hy+1);
+    });
+    // aperçu terrain
+    var h='<rect x="5" y="5" width="120" height="120" fill="#3b78d8" stroke="#fff"/><path d="M35 5a30 30 0 0 0 60 0z" fill="#1a2a8a" stroke="#fff" stroke-width=".8"/>';
+    man.forEach(function(o,i){
+      if(o.skip)return;var it=ITEMS[i],g=ground(o.hx,o.hy,it);
+      var X=5+g.m[1]*6,Y=5+(40-g.m[0])*6;
+      h+='<circle cx="'+X+'" cy="'+Y+'" r="'+(it[2]==='B'?3:5)+'" fill="'+(it[2]==='A'?'#ffb020':it[2]==='D'?'#2f6bff':'#ffe600')+'" stroke="#000" stroke-width=".7"/>';
+      if(it[2]!=='B')h+='<text x="'+X+'" y="'+(Y+2.5)+'" text-anchor="middle" font-size="6" font-weight="700" fill="'+(it[2]==='D'?'#fff':'#000')+'">'+(it[2]==='D'?it[0].slice(1):it[0])+'</text>';
+    });
+    $('#manPrev').innerHTML=h;
+    var n=man.length;
+    $('#manDone').hidden=n<ITEMS.length;
+    $('#manMsg').textContent=n<ITEMS.length?'('+(n+1)+'/'+ITEMS.length+') Touche la TÊTE de : '+ITEMS[n][1]+(ITEMS[n][2]==='B'?' (ou « Passer »).':'. Tu peux déplacer un point déjà posé en le faisant glisser.'):'Tout est pointé. Vérifie l\'aperçu du terrain, ajuste la « hauteur des pieds » si les positions semblent décalées, puis valide.';
+    $('#manSkip').disabled=n>=ITEMS.length;$('#manUndo').disabled=!n;
+  }
+  function startManual(){
+    Hm=homography(pts,DST);
+    if(!Hm){show('autoCalBox');$('#calMsg').textContent='Ces 4 points ne forment pas un terrain valable. Recommence.';return;}
+    mt=v.currentTime;mimg=grabFrame();mcv.width=mimg.width;mcv.height=mimg.height;man=[];
+    show('autoMan');setTitle('Pointage manuel — vidéo à '+fmt(mt));drawMan();
+  }
+  mcv.addEventListener('pointerdown',function(e){
+    e.preventDefault();var p=cpt(e,mcv),i,best=-1,bd=1e9,r=mcv.width/40;
+    for(i=0;i<man.length;i++){if(man[i].skip)continue;var d=Math.hypot(man[i].hx-p[0],man[i].hy-p[1]);if(d<bd){bd=d;best=i;}}
+    if(best>=0&&bd<r){mdrag=best;}
+    else if(man.length<ITEMS.length){man.push({hx:p[0],hy:p[1]});mdrag=man.length-1;}
+    try{mcv.setPointerCapture(e.pointerId);}catch(_){}
+    drawMan();
+  });
+  mcv.addEventListener('pointermove',function(e){if(mdrag<0)return;e.preventDefault();var p=cpt(e,mcv);man[mdrag].hx=p[0];man[mdrag].hy=p[1];drawMan();});
+  function mend(){mdrag=-1;}
+  mcv.addEventListener('pointerup',mend);mcv.addEventListener('pointercancel',mend);
+  $('#manSkip').addEventListener('click',function(){if(man.length<ITEMS.length){man.push({skip:true});drawMan();}});
+  $('#manUndo').addEventListener('click',function(){man.pop();drawMan();});
+  $('#manReset').addEventListener('click',function(){man=[];drawMan();});
+  $('#manFoot').addEventListener('input',drawMan);
+  $('#manRecal').addEventListener('click',function(){mode='man';$('#calOk').textContent='Pointer les joueuses';frameImg=grabFrame();fitCanvas(cv,frameImg);show('autoCalBox');setTitle('1. Repérer le terrain');calDone=false;updCal();});
+  $('#autoGoMan').addEventListener('click',function(){
+    mode='man';cfg.t0=v.currentTime;$('#calOk').textContent='Pointer les joueuses';
+    if(calDone&&pts.length===4){startManual();return;}
+    frameImg=grabFrame();fitCanvas(cv,frameImg);pts=[];show('autoCalBox');setTitle('1. Repérer le terrain');updCal();
+  });
+  function manFrame(){
+    var base=baseFrame('0-6'),cur=S.frames[S.cur],holder=null,bx=0,by=0,hs={};
+    ITEMS.forEach(function(it,i){
+      var o=man[i];if(!o||o.skip)return;
+      var g=ground(o.hx,o.hy,it);
+      if(it[0]==='BALL'){bx=g.m[0];by=g.m[1];hs.ball=o;return;}
+      base.pos[it[0]]=g.m;if(it[2]==='A')hs[it[0]]=o;
+    });
+    // ballon porté ? : tête d'attaquante la plus proche du point du ballon
+    var bo=hs.ball;
+    if(bo){
+      var best=null,bd=1e9;
+      ['AG','ARG','DC','ARD','AD','P'].forEach(function(id){var o=hs[id];if(!o)return;var d=Math.hypot(o.hx-bo.hx,o.hy-bo.hy);if(d<bd){bd=d;best=id;}});
+      var lim=mcv.height*0.14;
+      if(best&&bd<lim)holder=best;
+    }else holder=(cur&&cur.holder)||'DC';
+    base.holder=holder;base.bx=bx;base.by=by;base.note='Vidéo à '+fmt(mt);
+    return base;
+  }
+  function manClose(msg){
+    panel.hidden=true;autoDockOut();
+    refresh();save();
+    hint(msg);if(fsOn)fsToast(msg);
+  }
+  $('#manAppend').addEventListener('click',function(){
+    if(curLocked()){hint('');if(fsOn)fsToast('Action verrouillée : crée plutôt une nouvelle séquence.');else alert('Cette action est verrouillée : utilise « Nouvelle séquence avec cette étape ».');return;}
+    stop();var f=manFrame();S.frames.push(f);setCur(S.frames.length-1);
+    var ex=S.libId?byId(S.libId):null;
+    if(ex&&!ex.locked){LIB[LIB.indexOf(ex)]=snapshot(S.title||ex.title,ex.id);writeLib();renderLib();}
+    manClose('Étape '+S.frames.length+' ajoutée depuis la vidéo ('+fmt(mt)+').');
+  });
+  $('#manNew').addEventListener('click',function(){
+    stop();var f=manFrame();
+    S.dt=0;S.frames=[f];S.libId=null;S.title='Vidéo '+fmt(mt);syncTitle();setCur(0);renderLib();
+    manClose('Nouvelle séquence créée depuis la vidéo. Ajoute les moments suivants avec « Convertir » puis « Pointage manuel ».');
+  });
   function pickTeam(samples,fr){
     show('autoTeam');setTitle('3. Quelle équipe attaque ?');
     tcv.width=fr.width;tcv.height=fr.height;
@@ -2107,8 +2274,9 @@ document.addEventListener('vidloaded',function(){
     var base=($('#vidName').textContent||'vidéo').replace(/\.[^.]+$/,'').slice(0,24);
     var e={id:uid(),title:'Vidéo '+base+' '+fmt(cfg.t0),mode:'half',defense:'0-6',defLabels:FORMS['0-6'].lab.slice(),frames:res.frames,updated:Date.now(),locked:false,dt:Math.round(cfg.step*1000)};
     LIB.unshift(e);writeLib();renderLib();
-    panel.hidden=true;
+    panel.hidden=true;autoDockOut();
     openEntry(e.id);
+    if(fsOn)fsToast('Séquence créée : '+res.frames.length+' étapes'+(res.missing?' ('+res.missing+' joueuse(s) non repérée(s))':'')+'. Touche Lecture.');
     hint('Séquence créée à partir de la vidéo ('+res.frames.length+' étapes, '+Math.round(cfg.step*1000)/1000+' s entre chaque). '+(res.missing?res.missing+' joueuse(s) non repérée(s) restent à leur place d\'origine. ':'')+'Corrige à la main les positions douteuses puis « Mettre à jour ».');
   }
 })();
