@@ -142,6 +142,26 @@ body.viewer .vid{display:none}
 .vtop{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .vmeta{opacity:.7;font-size:.88em}
 body.viewer .vlib{display:none}
+.vwnav{display:none;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border-radius:14px;background:var(--accent);color:#fff}
+.vwnav .btn{color:var(--fg);text-decoration:none}
+.vwnav strong{font:700 20px/1.1 var(--disp);letter-spacing:.02em;text-transform:uppercase}
+body.vwork .vwnav{display:flex}
+body.vwork header,body.vwork .bar,body.vwork .stage,body.vwork .deck,body.vwork .lib{display:none!important}
+body:not(.vwork) #cutBox,body:not(.vwork) #autoStart{display:none!important}
+body.vwork .vwopen{display:none}
+body.vwork #vlibPanel{order:5}
+.vwopen{text-decoration:none}
+.jump{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:42px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:600 15px/1 var(--body);text-decoration:none;cursor:pointer}
+.chipn{min-width:22px;padding:2px 7px;border-radius:999px;background:var(--accent);color:#fff;font-size:13px;text-align:center}
+.chipn:empty{display:none}
+.vlib{border:2px solid var(--accent)!important;border-left-width:8px!important;background:color-mix(in srgb,var(--accent) 5%,var(--panel))}
+.vlib .libhead h2{font-size:1.5em}
+.vlib #vlibCount{padding:3px 12px;border-radius:999px;background:var(--accent);color:#fff;font-weight:700;margin:0}
+.vrow{grid-template-columns:128px 1fr!important;align-items:start}
+.vthumb{width:128px;height:72px;border-radius:8px;background:#000 center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px}
+.vbody{display:grid;gap:6px;min-width:0}
+@media(max-width:520px){.vrow{grid-template-columns:1fr!important}.vthumb{width:100%;height:120px}}
 .cutsteps{display:flex;gap:6px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
 .stp{padding:6px 12px;border-radius:999px;border:2px solid var(--line);font-weight:700;opacity:.55}
 .stp.now{opacity:1;border-color:var(--accent)}
@@ -288,9 +308,11 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
 </style>
 
 <div class="wrap">
+  <div class="vwnav" id="vwNav"><a class="btn" id="vwBack" href="#page=main">&larr; Retour au tableau</a><strong>Page de travail vidéo</strong><span class="grow"></span><a class="btn" href="#vlibPanel" id="vwToLib">Vidéothèque &darr;</a></div>
   <header>
     <h1 id="h1">Tableau tactique handball</h1>
     <p class="sub" id="sub">Déplace les joueuses et le ballon, enregistre des étapes, puis lance la lecture.</p>
+    <nav class="jump" id="jumpNav" aria-label="Accès rapide"><button type="button" class="chip" data-go="libPanel">&#128218; Bibliothèque</button><button type="button" class="chip" data-go="vlibPanel">&#127910; Vidéothèque <span class="chipn" id="jumpVN"></span></button><a class="chip" href="#page=video">&#127916; Page de travail vidéo</a></nav>
   </header>
 
   <section class="panel bar" aria-label="Réglages du terrain">
@@ -431,122 +453,7 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <span><i class="dot b"></i>Ballon (dépose-le sur une joueuse pour qu'elle le porte)</span>
     </div>
   </section>
-  <section class="panel vid" id="vidPanel" aria-label="Vidéo import">
-    <div class="libhead"><h2>Vidéo import</h2></div>
-    <p class="hint" id="vidHint">Dépose une vidéo de match ou d'entraînement : elle reste sur ton appareil (rien n'est envoyé). Regarde-la au ralenti, puis reproduis chaque moment clé sur le terrain avec « + Étape ».</p>
-    <label class="drop" id="vidDrop" for="vidFile">
-      <input type="file" id="vidFile" accept="video/*" hidden>
-      <span id="vidDropT">Touche ici pour choisir une vidéo, ou dépose-la</span>
-    </label>
-    <div class="vidbox" id="vidBox" hidden>
-      <div class="vidhead" id="vidDrag"><span id="vidName"></span><span class="grow"></span><button type="button" class="btn" id="vidPin" aria-pressed="false">Détacher</button><button type="button" class="btn" id="vidClose">Retirer</button></div>
-      <video id="vid" playsinline preload="metadata"></video>
-      <input type="range" id="vidSeek" min="0" max="1000" value="0" aria-label="Position dans la vidéo">
-      <div class="vidctl">
-        <button type="button" class="btn" data-seek="-2">&minus;2 s</button>
-        <button type="button" class="btn" data-seek="-0.2">&minus;0,2 s</button>
-        <button type="button" class="btn primary" id="vidPlay">Lecture</button>
-        <button type="button" class="btn" data-seek="0.2">+0,2 s</button>
-        <button type="button" class="btn" data-seek="2">+2 s</button>
-        <button type="button" class="btn" id="vidRate">Vitesse ×1</button>
-        <span class="vidt" id="vidTime">0:00,0</span>
-      </div>
-      <button type="button" class="btn primary" id="vidStep">+ Étape sur le terrain (position actuelle)</button>
-      <button type="button" class="btn" id="autoStart">Convertir automatiquement en schéma (15 s)</button>
-      <div class="cutbox" id="cutBox">
-        <div class="cuthead"><strong>Découper une séquence</strong><span class="grow"></span><span class="vidt" id="cutSum">Aucune séquence en cours</span></div>
-        <ol class="cutsteps" id="cutSteps"><li class="stp">① Début</li><li class="stp">② Fin</li><li class="stp">③ Couper</li><li class="stp">④ Nommer</li></ol>
-        <div class="cutinfo" id="cutInfo"></div>
-        <div class="cuttl" id="cutTL" aria-label="Séquence sur la vidéo"><div class="cuttlz" id="cutTLz"></div><div class="cuttlh" id="cutTLh"></div></div>
-        <div class="cuttlt"><span id="cutTLt">0:00,0 / 0:00,0</span></div>
-        <p class="hint">Une séquence à la fois : place la vidéo au début voulu → « Début ici », puis à la fin voulue → « Fin ici », puis « Couper ». Tu donnes ensuite un nom : la séquence est enregistrée dans la vidéothèque.</p>
-        <div class="autorow">
-          <button type="button" class="btn bigg" id="cutStart">&#9654; Début ici</button>
-          <button type="button" class="btn bigr" id="cutEnd">&#9632; Fin ici</button>
-          <button type="button" class="btn" id="cutQ5">Fin = début + 5 s</button>
-          <button type="button" class="btn" id="cutQ10">Fin = début + 10 s</button>
-        </div>
-        <p class="hint cutpend" id="cutMsg"></p>
-        <label class="lbl" for="cutName">Nom de la séquence (tu peux aussi le donner après la découpe)</label>
-        <input type="text" id="cutName" class="zname" maxlength="60" placeholder="Séquence 1">
-        <div class="autorow">
-          <button type="button" class="btn" id="cutPlay">&#9654; Revoir la séquence</button>
-          <button type="button" class="btn primary bigcut" id="cutGo">&#9986; Couper la séquence</button>
-          <button type="button" class="btn danger" id="cutClear">Annuler la séquence</button>
-        </div>
-        <p class="hint">La découpe se fait en temps réel (comme une lecture) : garde l'écran allumé et l'appli au premier plan. Tout reste sur ton appareil.</p>
-        <div id="cutDoneBox" hidden><strong>Déjà découpées dans cette vidéo</strong><ul class="liblist" id="cutDone"></ul></div>
-      </div>
-    </div>
-    <div class="auto" id="autoPanel" hidden>
-      <div class="autohead"><strong id="autoTitle">Conversion automatique</strong><span class="grow"></span><button type="button" class="btn" id="autoCancel">Fermer</button></div>
-      <div id="autoCfg">
-        <p class="hint">À partir de l'image affichée, l'appli repère les joueuses (internet nécessaire la première fois), les place sur le demi-terrain et crée une séquence animée.</p>
-        <div class="autorow">
-          <label>Durée <select id="autoDur"><option value="5">5 s</option><option value="10">10 s</option><option value="15" selected>15 s</option><option value="20">20 s</option><option value="30">30 s</option><option value="60">60 s</option></select></label>
-          <label>Un point toutes les <select id="autoStep"><option value="0.5" selected>0,5 s</option><option value="0.75">0,75 s</option><option value="1">1 s</option></select></label>
-        </div>
-        <p class="hint">Mets d'abord la vidéo en pause sur l'instant de départ (les joueuses doivent être visibles sur le demi-terrain attaqué).</p>
-        <div class="autorow">
-          <button type="button" class="btn primary" id="autoGo1">Détection automatique</button>
-          <button type="button" class="btn primary" id="autoGoMan">Pointage manuel (4 angles + têtes)</button>
-        </div>
-        <p class="hint">Pointage manuel : tu repères les 4 angles du demi-terrain, puis tu touches la tête des 6 attaquantes, des 6 défenseuses et le ballon. L'appli en déduit leurs positions et crée l'étape.</p>
-      </div>
-      <div id="autoCalBox" hidden>
-        <p id="calMsg" class="hint"></p>
-        <div class="autorow"><svg id="calDiag" viewBox="0 0 130 100" width="150" height="115" aria-hidden="true"></svg></div>
-        <canvas id="autoCv" aria-label="Image de la vidéo"></canvas>
-        <div class="autorow">
-          <button type="button" class="btn" id="calReset">Recommencer les points</button>
-          <button type="button" class="btn primary" id="calOk" disabled>Lancer la détection</button>
-        </div>
-      </div>
-      <div id="autoMan" hidden>
-        <p id="manMsg" class="hint"></p>
-        <canvas id="manCv" aria-label="Pointage des joueuses"></canvas>
-        <div class="autorow">
-          <button type="button" class="btn" id="manSkip">Passer</button>
-          <button type="button" class="btn" id="manUndo">Annuler le dernier</button>
-          <button type="button" class="btn" id="manReset">Tout effacer</button>
-          <label>Hauteur des pieds <input type="range" id="manFoot" min="60" max="140" value="100" style="min-height:32px"></label>
-        </div>
-        <svg id="manPrev" viewBox="0 0 130 130" width="170" height="170" aria-hidden="true"></svg>
-        <div class="autorow" id="manDone" hidden>
-          <button type="button" class="btn primary" id="manAppend">Ajouter comme étape suivante</button>
-          <button type="button" class="btn" id="manNew">Nouvelle séquence avec cette étape</button>
-          <button type="button" class="btn" id="manRecal">Refaire les 4 angles</button>
-        </div>
-      </div>
-      <div id="autoRun" hidden>
-        <p id="runMsg" class="hint">Préparation…</p>
-        <progress id="runBar" max="100" value="0" style="width:100%"></progress>
-      </div>
-      <div id="autoTeam" hidden>
-        <p class="hint" id="teamMsg">Touche une joueuse de l'équipe qui attaque (cadre jaune).</p>
-        <canvas id="teamCv" aria-label="Choix de l'équipe"></canvas>
-        <div class="autorow" id="revBtns" hidden><button type="button" class="btn primary" id="revOk">Valider et créer la séquence</button><button type="button" class="btn" id="revRedo">Changer d'équipe</button></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel vlib" id="vlibPanel" aria-label="Vidéothèque">
-    <div class="libhead">
-      <h2>Vidéothèque</h2>
-      <p class="hint" id="vlibCount"></p>
-    </div>
-    <p class="hint">Les vidéos découpées s'y rangent automatiquement sous le nom de leur zone. Tu peux aussi y ajouter tes vidéos pour les retrouver sans les rechercher. Tout reste sur cet appareil.</p>
-    <div class="autorow">
-      <label class="btn primary" for="vlibFile">+ Ajouter des vidéos</label>
-      <input type="file" id="vlibFile" accept="video/*" multiple hidden>
-      <button type="button" class="btn" id="vlibAddCur">Ajouter la vidéo ouverte</button>
-    </div>
-    <ul class="liblist" id="vlibList"></ul>
-    <p class="hint" id="vlibMsg"></p>
-    <p class="hint" id="vlibStore"></p>
-  </section>
-
-  <section class="panel lib" aria-label="Bibliothèque d'actions">
+  <section class="panel lib" id="libPanel" aria-label="Bibliothèque d'actions">
     <div class="libhead">
       <h2>Bibliothèque</h2>
       <p class="hint" id="libCount"></p>
@@ -593,6 +500,107 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <textarea id="backupText" rows="4" placeholder="Le texte de sauvegarde apparaît ici, ou colle-le ici pour importer."></textarea>
     </details>
   </section>
+
+  <section class="panel vid" id="vidPanel" aria-label="Vidéo import">
+    <div class="libhead"><h2>Vidéo import</h2><span class="grow"></span><a class="btn primary vwopen" href="#page=video">&#127916; Ouvrir la page de travail vidéo</a></div>
+    <p class="hint" id="vidHint">Dépose une vidéo de match ou d'entraînement : elle reste sur ton appareil (rien n'est envoyé). Regarde-la au ralenti, puis reproduis chaque moment clé sur le terrain avec « + Étape ». Pour découper ou convertir en schéma, ouvre la page de travail vidéo.</p>
+    <label class="drop" id="vidDrop" for="vidFile">
+      <input type="file" id="vidFile" accept="video/*" hidden>
+      <span id="vidDropT">Touche ici pour choisir une vidéo, ou dépose-la</span>
+    </label>
+    <div class="vidbox" id="vidBox" hidden>
+      <div class="vidhead" id="vidDrag"><span id="vidName"></span><span class="grow"></span><button type="button" class="btn" id="vidPin" aria-pressed="false">Détacher</button><button type="button" class="btn" id="vidClose">Retirer</button></div>
+      <video id="vid" playsinline preload="metadata"></video>
+      <input type="range" id="vidSeek" min="0" max="1000" value="0" aria-label="Position dans la vidéo">
+      <div class="vidctl">
+        <button type="button" class="btn" data-seek="-2">&minus;2 s</button>
+        <button type="button" class="btn" data-seek="-0.2">&minus;0,2 s</button>
+        <button type="button" class="btn primary" id="vidPlay">Lecture</button>
+        <button type="button" class="btn" data-seek="0.2">+0,2 s</button>
+        <button type="button" class="btn" data-seek="2">+2 s</button>
+        <button type="button" class="btn" id="vidRate">Vitesse ×1</button>
+        <span class="vidt" id="vidTime">0:00,0</span>
+      </div>
+      <button type="button" class="btn primary" id="vidStep">+ Étape sur le terrain (position actuelle)</button>
+      <button type="button" class="btn" id="autoStart">Convertir en schéma (pointage manuel)</button>
+      <div class="cutbox" id="cutBox">
+        <div class="cuthead"><strong>Découper une séquence</strong><span class="grow"></span><span class="vidt" id="cutSum">Aucune séquence en cours</span></div>
+        <ol class="cutsteps" id="cutSteps"><li class="stp">① Début</li><li class="stp">② Fin</li><li class="stp">③ Couper</li><li class="stp">④ Nommer</li></ol>
+        <div class="cutinfo" id="cutInfo"></div>
+        <div class="cuttl" id="cutTL" aria-label="Séquence sur la vidéo"><div class="cuttlz" id="cutTLz"></div><div class="cuttlh" id="cutTLh"></div></div>
+        <div class="cuttlt"><span id="cutTLt">0:00,0 / 0:00,0</span></div>
+        <p class="hint">Une séquence à la fois : place la vidéo au début voulu → « Début ici », puis à la fin voulue → « Fin ici », puis « Couper ». Tu donnes ensuite un nom : la séquence est enregistrée dans la vidéothèque.</p>
+        <div class="autorow">
+          <button type="button" class="btn bigg" id="cutStart">&#9654; Début ici</button>
+          <button type="button" class="btn bigr" id="cutEnd">&#9632; Fin ici</button>
+          <button type="button" class="btn" id="cutQ5">Fin = début + 5 s</button>
+          <button type="button" class="btn" id="cutQ10">Fin = début + 10 s</button>
+        </div>
+        <p class="hint cutpend" id="cutMsg"></p>
+        <label class="lbl" for="cutName">Nom de la séquence (tu peux aussi le donner après la découpe)</label>
+        <input type="text" id="cutName" class="zname" maxlength="60" placeholder="Séquence 1">
+        <div class="autorow">
+          <button type="button" class="btn" id="cutPlay">&#9654; Revoir la séquence</button>
+          <button type="button" class="btn primary bigcut" id="cutGo">&#9986; Couper la séquence</button>
+          <button type="button" class="btn danger" id="cutClear">Annuler la séquence</button>
+        </div>
+        <p class="hint">La découpe se fait en temps réel (comme une lecture) : garde l'écran allumé et l'appli au premier plan. Tout reste sur ton appareil.</p>
+        <div id="cutDoneBox" hidden><strong>Déjà découpées dans cette vidéo</strong><ul class="liblist" id="cutDone"></ul></div>
+      </div>
+    </div>
+    <div class="auto" id="autoPanel" hidden>
+      <div class="autohead"><strong id="autoTitle">Conversion en schéma</strong><span class="grow"></span><button type="button" class="btn" id="autoCancel">Fermer</button></div>
+      <div id="autoCfg">
+        <p class="hint">Mets d'abord la vidéo en pause sur l'instant voulu (les joueuses doivent être visibles sur le demi-terrain attaqué).</p>
+        <div class="autorow">
+          <button type="button" class="btn primary" id="autoGoMan">Pointage manuel (4 angles + têtes)</button>
+        </div>
+        <p class="hint">Tu repères les 4 angles du demi-terrain, puis tu touches la tête des 6 attaquantes, des 6 défenseuses et le ballon. L'appli en déduit leurs positions et crée l'étape.</p>
+      </div>
+      <div id="autoCalBox" hidden>
+        <p id="calMsg" class="hint"></p>
+        <div class="autorow"><svg id="calDiag" viewBox="0 0 130 100" width="150" height="115" aria-hidden="true"></svg></div>
+        <canvas id="autoCv" aria-label="Image de la vidéo"></canvas>
+        <div class="autorow">
+          <button type="button" class="btn" id="calReset">Recommencer les points</button>
+          <button type="button" class="btn primary" id="calOk" disabled>Pointer les joueuses</button>
+        </div>
+      </div>
+      <div id="autoMan" hidden>
+        <p id="manMsg" class="hint"></p>
+        <canvas id="manCv" aria-label="Pointage des joueuses"></canvas>
+        <div class="autorow">
+          <button type="button" class="btn" id="manSkip">Passer</button>
+          <button type="button" class="btn" id="manUndo">Annuler le dernier</button>
+          <button type="button" class="btn" id="manReset">Tout effacer</button>
+          <label>Hauteur des pieds <input type="range" id="manFoot" min="60" max="140" value="100" style="min-height:32px"></label>
+        </div>
+        <svg id="manPrev" viewBox="0 0 130 130" width="170" height="170" aria-hidden="true"></svg>
+        <div class="autorow" id="manDone" hidden>
+          <button type="button" class="btn primary" id="manAppend">Ajouter comme étape suivante</button>
+          <button type="button" class="btn" id="manNew">Nouvelle séquence avec cette étape</button>
+          <button type="button" class="btn" id="manRecal">Refaire les 4 angles</button>
+        </div>
+      </div>
+          </div>
+  </section>
+
+  <section class="panel vlib" id="vlibPanel" aria-label="Vidéothèque">
+    <div class="libhead">
+      <h2>Vidéothèque</h2>
+      <p class="hint" id="vlibCount"></p>
+    </div>
+    <p class="hint">Les séquences découpées s'y rangent sous le nom que tu leur donnes. Tu peux aussi y ajouter tes vidéos pour les retrouver sans les rechercher. Tout reste sur cet appareil.</p>
+    <div class="autorow">
+      <label class="btn primary" for="vlibFile">+ Ajouter des vidéos</label>
+      <input type="file" id="vlibFile" accept="video/*" multiple hidden>
+      <button type="button" class="btn" id="vlibAddCur">Ajouter la vidéo ouverte</button>
+    </div>
+    <ul class="liblist" id="vlibList"></ul>
+    <p class="hint" id="vlibMsg"></p>
+    <p class="hint" id="vlibStore"></p>
+  </section>
+
 </div>
 
 <div id="vscroll" hidden><div id="vthumb"></div></div>
@@ -2120,6 +2128,7 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
   $('#vidClose').addEventListener('click',function(){loadedKey='';seq={s:null,e:null,name:''};done=[];playS=false;render();});
   window.addEventListener('resize',function(){setTimeout(function(){paintMarks();paintTL();},120);});
   if('ResizeObserver' in window){try{new ResizeObserver(function(){paintMarks();paintTL();}).observe($('#fsVScrub'));new ResizeObserver(paintTL).observe($('#cutTL'));}catch(_){}}
+  window.__paintCut=function(){render();};
   render();
 
   /* ================= bibliothèque de vidéos (IndexedDB) ================= */
@@ -2142,7 +2151,21 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
       t.onabort=function(){rej(t.error||new Error('Stockage plein ou refusé'));};
     });});
   }
-  function vAdd(r){r.id=r.id||('v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));r.date=Date.now();r.size=r.blob.size;return tx('readwrite',function(s){s.put(r);}).then(function(){vRender();return r.id;});}
+  function makeThumb(blob){
+    return new Promise(function(res){
+      var u=URL.createObjectURL(blob),tv=document.createElement('video'),dn=false;
+      function fin(x){if(dn)return;dn=true;try{URL.revokeObjectURL(u);}catch(_){}res(x);}
+      tv.muted=true;tv.preload='auto';tv.playsInline=true;
+      tv.onloadeddata=function(){try{tv.currentTime=Math.min(1,(isFinite(tv.duration)?tv.duration:2)/3);}catch(e){fin('');}};
+      tv.onseeked=function(){try{var c=document.createElement('canvas');c.width=192;c.height=Math.max(1,Math.round(192*(tv.videoHeight||9)/(tv.videoWidth||16)));c.getContext('2d').drawImage(tv,0,0,c.width,c.height);fin(c.toDataURL('image/jpeg',0.6));}catch(e){fin('');}};
+      tv.onerror=function(){fin('');};
+      setTimeout(function(){fin('');},6000);tv.src=u;
+    });
+  }
+  function vAdd(r){
+    r.id=r.id||('v'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));r.date=Date.now();r.size=r.blob.size;
+    return makeThumb(r.blob).then(function(th){r.thumb=th;return tx('readwrite',function(s){s.put(r);});}).then(function(){vRender();return r.id;});
+  }
   function vAll(){return tx('readonly',function(s){return s.getAll();}).then(function(a){return a||[];});}
   function vGet(id){return tx('readonly',function(s){return s.get(id);});}
   function vDel(id){return tx('readwrite',function(s){s.delete(id);}).then(vRender);}
@@ -2155,13 +2178,18 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
     return vAll().then(function(items){
       ul.innerHTML='';
       items.sort(function(a,b){return b.date-a.date;});
-      $('#vlibCount').textContent=items.length?items.length+(items.length>1?' vidéos':' vidéo'):'Aucune vidéo';
+      $('#vlibCount').textContent=items.length?items.length+(items.length>1?' vidéos':' vidéo'):'Aucune vidéo';$('#jumpVN').textContent=items.length?String(items.length):'';
       items.forEach(function(r){
         var li=document.createElement('li');li.className='vrow';
+        var th=document.createElement('div');th.className='vthumb';
+        if(r.thumb)th.style.backgroundImage='url('+r.thumb+')';else{th.textContent='\uD83C\uDF9E';
+          if(r.thumb===undefined){r.thumb='';(function(rr){makeThumb(rr.blob).then(function(d){if(!d)return;vGet(rr.id).then(function(rec){if(!rec)return;rec.thumb=d;tx('readwrite',function(s){s.put(rec);}).then(vRender);});});})(r);}}
+        li.appendChild(th);
+        var body=document.createElement('div');body.className='vbody';
         var top=document.createElement('div');top.className='vtop';
         var nm=document.createElement('strong');nm.textContent=r.name;
         var meta=document.createElement('span');meta.className='vmeta';meta.textContent=(r.kind==='clip'?'Découpe':'Vidéo')+' · '+(r.dur?fmtS(r.dur)+' · ':'')+human(r.size||0)+' · '+fdate(r.date);
-        top.appendChild(nm);top.appendChild(meta);li.appendChild(top);
+        top.appendChild(nm);top.appendChild(meta);body.appendChild(top);
         var acts=document.createElement('div');acts.className='zacts';
         function b(l,fn,cls){var x=document.createElement('button');x.type='button';x.className='btn'+(cls?' '+cls:'');x.textContent=l;x.addEventListener('click',function(){fn(x);});acts.appendChild(x);}
         b('Ouvrir dans le lecteur',function(){
@@ -2195,7 +2223,7 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
           if(!armed){armed=1;x.textContent='Confirmer';setTimeout(function(){armed=0;x.textContent='Supprimer';},3000);return;}
           vDel(r.id);
         },'danger');
-        li.appendChild(acts);ul.appendChild(li);
+        body.appendChild(acts);li.appendChild(body);ul.appendChild(li);
       });
       try{
         if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(function(e){
@@ -2221,9 +2249,26 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
     vAdd({name:f.name,blob:f,type:f.type||'video/mp4',dur:D(),kind:'source'}).then(function(){vmsg('« '+f.name+' » ajoutée à la bibliothèque.');}).catch(function(e){vmsg('Ajout impossible : '+(e&&e.message||'espace insuffisant')+'.');});
   });
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(_){}
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)vRender();});
   vRender();
 })();
 
+
+/* page de travail vidéo : même appli, autre vue (bouton Retour du navigateur compris) */
+(function(){
+  function apply(){
+    var vw=/^#page=video/.test(location.hash||'');
+    document.body.classList.toggle('vwork',vw);
+    try{window.scrollTo(0,0);}catch(_){}
+    if(!vw&&typeof refresh==='function'){try{refresh();}catch(_){}}
+    if(window.__paintCut)window.__paintCut();
+  }
+  window.addEventListener('hashchange',apply);apply();
+  Array.prototype.forEach.call(document.querySelectorAll('[data-go]'),function(b){
+    b.addEventListener('click',function(){var el=document.getElementById(b.getAttribute('data-go'));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});});
+  });
+  $('#vwToLib').addEventListener('click',function(e){e.preventDefault();var el=$('#vlibPanel');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});});
+})();
 
 /* hauteur de la barre */
 function setBarH(){var c=$('.fsctl');if(c&&fsOn)stageEl.style.setProperty('--fsbarh',c.offsetHeight+'px');}
@@ -2453,12 +2498,12 @@ document.addEventListener('vidloaded',function(){
 
 /* conversion automatique vidéo -> schéma */
 (function(){
-  var v=$('#vid'),panel=$('#autoPanel'),cv=$('#autoCv'),ctx=cv.getContext('2d'),tcv=$('#teamCv'),tctx=tcv.getContext('2d');
-  var pts=[],drag=-1,cancelled=false,busy=false,cfg={dur:15,step:0.5,t0:0},mode='auto',calDone=false,Hm=null,Hrun=null;
+  var v=$('#vid'),panel=$('#autoPanel'),cv=$('#autoCv'),ctx=cv.getContext('2d');
+  var pts=[],drag=-1,cancelled=false,busy=false,cfg={t0:0},mode='man',calDone=false,Hm=null;
   var LABELS=['①','②','③','④'];
   var DST=[[40,0],[40,20],[20,20],[20,0]];
   var MSG=['Touche le coin ① : le coin GAUCHE de la ligne de but (vu de dos des attaquantes, face au but).','Touche le coin ② : le coin DROIT de la ligne de but.','Touche le coin ③ : le coin de la ligne médiane, côté droit.','Touche le coin ④ : le coin de la ligne médiane, côté gauche.'];
-  function show(id){['autoCfg','autoCalBox','autoRun','autoTeam','autoMan'].forEach(function(x){$('#'+x).hidden=(x!==id);});}
+  function show(id){['autoCfg','autoCalBox','autoMan'].forEach(function(x){$('#'+x).hidden=(x!==id);});}
   function setTitle(s){$('#autoTitle').textContent=s;}
   function fmt(s){var m=Math.floor(s/60),r=s-m*60;return m+':'+(r<10?'0':'')+Math.round(r);}
   /* ---- homographie ---- */
@@ -2559,102 +2604,6 @@ document.addEventListener('vidloaded',function(){
   function endd(){drag=-1;}
   cv.addEventListener('pointerup',endd);cv.addEventListener('pointercancel',endd);
   $('#calReset').addEventListener('click',function(){pts=[];updCal();});
-  /* ---- détecteur ---- */
-  function loadScript(src){return new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.crossOrigin='anonymous';s.onload=res;s.onerror=function(){rej(new Error('script '+src));};document.head.appendChild(s);});}
-  var detP=null;
-  function getDetector(){
-    if(window.__detectorMock)return Promise.resolve(window.__detectorMock);
-    if(detP)return detP;
-    detP=loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js')
-      .then(function(){return loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js');})
-      .then(function(){return window.cocoSsd.load({base:'mobilenet_v2'}).catch(function(){return window.cocoSsd.load({base:'lite_mobilenet_v2'});});})
-      .then(function(m){return function(c){return m.detect(c,100,0.12);};})
-      .catch(function(err){detP=null;throw err;});
-    return detP;
-  }
-  function iou(a,b){
-    var x1=Math.max(a[0],b[0]),y1=Math.max(a[1],b[1]),x2=Math.min(a[0]+a[2],b[0]+b[2]),y2=Math.min(a[1]+a[3],b[1]+b[3]);
-    var inter=Math.max(0,x2-x1)*Math.max(0,y2-y1),u=a[2]*a[3]+b[2]*b[3]-inter;return u>0?inter/u:0;
-  }
-  function nms(list,th){
-    list.sort(function(a,b){return b.score-a.score;});
-    var keep=[];list.forEach(function(d){if(keep.every(function(k){return iou(k.bbox,d.bbox)<th;}))keep.push(d);});return keep;
-  }
-  function cropBox(){
-    var xs=pts.map(function(p){return p[0];}),ys=pts.map(function(p){return p[1];});
-    var x0=Math.min.apply(null,xs),x1=Math.max.apply(null,xs),y0=Math.min.apply(null,ys),y1=Math.max.apply(null,ys);
-    var W=v.videoWidth||cv.width,Hh=v.videoHeight||cv.height,mx=(x1-x0)*0.12,my=(y1-y0)*0.18;
-    x0=Math.max(0,x0-mx);y0=Math.max(0,y0-my*1.6);x1=Math.min(W,x1+mx);y1=Math.min(Hh,y1+my);
-    return [x0,y0,x1-x0,y1-y0];
-  }
-  function pxH(H,fx,fy){var p=applyH(H,fx,fy),q=applyH(H,fx+1,fy),g=Math.hypot(q[0]-p[0],q[1]-p[1]);return (g>0&&isFinite(g))?1.7/g:0;}
-  // tuiles carrées dont la taille dépend de la taille des joueuses à l'image (le détecteur les voit mieux quand elles occupent ~1/3 de la tuile)
-  function makeTiles(H,box,W,Hh){
-    var Hi=inv3(H),hs=[],gx,gy,p,h,tiles=[];
-    for(gx=0;gx<5;gx++)for(gy=0;gy<3;gy++){p=applyH(Hi,20+gx*5,2+gy*8);h=pxH(H,p[0],p[1]);if(h>0&&isFinite(h)&&h<Hh*2)hs.push(h);}
-    if(hs.length){
-      var hmin=Math.min.apply(null,hs),hmax=Math.max.apply(null,hs),sizes=[hmin*3];
-      if(hmax>hmin*1.6)sizes.push(hmax*3);
-      var budget=Math.floor(11/sizes.length);
-      sizes.forEach(function(T){
-        T=Math.min(Math.max(T,128),W,Hh);
-        var g=0,st,cols,rows;
-        for(;;){
-          st=T*0.7;cols=Math.max(1,Math.ceil((box[2]-T)/st)+1);rows=Math.max(1,Math.ceil((box[3]-T)/st)+1);
-          if(cols*rows<=budget||g++>10||T>=Math.min(W,Hh))break;T*=1.12;T=Math.min(T,W,Hh);
-        }
-        if(T>=box[2]*0.95&&T>=box[3]*0.95)return;
-        var i,j;
-        for(j=0;j<rows;j++)for(i=0;i<cols;i++){
-          var x=box[0]+(cols>1?i*(box[2]-T)/(cols-1):(box[2]-T)/2),y=box[1]+(rows>1?j*(box[3]-T)/(rows-1):(box[3]-T)/2);
-          x=Math.max(0,Math.min(W-T,x));y=Math.max(0,Math.min(Hh-T,y));
-          tiles.push({r:[x,y,T,T],sq:true});
-        }
-      });
-    }
-    tiles.push({r:box,sq:false});
-    return tiles;
-  }
-  function detectFrame(detect,frame,H,box,tiles){
-    var all=[],balls=[],tc=document.createElement('canvas'),Wf=frame.width,Hf=frame.height;
-    return tiles.reduce(function(p,t){
-      return p.then(function(){
-        var r=t.r;tc.width=Math.max(1,Math.round(r[2]));tc.height=Math.max(1,Math.round(r[3]));
-        tc.getContext('2d').drawImage(frame,r[0],r[1],r[2],r[3],0,0,tc.width,tc.height);
-        window.__tile=[r[0],r[1]];
-        return Promise.resolve(detect(tc)).then(function(res){
-          res.forEach(function(d){
-            var b=d.bbox,cls=d['class']||d.class;
-            if(cls==='sports ball'){if(b[2]<tc.width*0.2&&b[3]<tc.height*0.2)balls.push({c:[b[0]+b[2]/2+r[0],b[1]+b[3]/2+r[1]],score:d.score});return;}
-            if(cls!=='person')return;
-            var cx=b[0]+b[2]/2;
-            if(cx<0||cx>tc.width||b[1]+b[3]<0||b[1]+b[3]>tc.height+3)return;
-            if(t.sq){ // personnes coupées par un bord intérieur de tuile : on laisse la tuile voisine les voir entières
-              var e=3;
-              if((r[0]>1&&b[0]<e)||(r[1]>1&&b[1]<e)||(r[0]+r[2]<Wf-1&&b[0]+b[2]>tc.width-e)||(r[1]+r[3]<Hf-1&&b[1]+b[3]>tc.height-e))return;
-            }
-            all.push({bbox:[b[0]+r[0],b[1]+r[1],b[2],b[3]],score:d.score});
-          });
-        });
-      });
-    },Promise.resolve()).then(function(){
-      var out=[],fc=frame.getContext('2d');
-      nms(all,0.5).forEach(function(d){
-        var b=d.bbox,fx=b[0]+b[2]/2,fy=b[1]+b[3]*0.97,m=applyH(H,fx,fy);
-        if(!(m[0]>=19&&m[0]<=41.8&&m[1]>=-1.8&&m[1]<=21.8))return;
-        if(d.score<0.15)return;
-        var he=pxH(H,fx,fy);
-        if(he>0&&(b[3]<he*0.42||b[3]>he*1.9))return; // taille incohérente : public, arbitre loin, faux positif
-        if(out.some(function(o){return Math.hypot(o.m[0]-m[0],o.m[1]-m[1])<0.4;}))return;
-        var sx=Math.round(b[0]+b[2]*0.28),sy=Math.round(b[1]+b[3]*0.18),sw=Math.max(1,Math.round(b[2]*0.44)),sh=Math.max(1,Math.round(b[3]*0.3)),rgb=[128,128,128];
-        try{var id=fc.getImageData(sx,sy,sw,sh).data,r0=0,g0=0,bl=0,n=id.length/4,q;for(q=0;q<id.length;q+=4){r0+=id[q];g0+=id[q+1];bl+=id[q+2];}rgb=[r0/n,g0/n,bl/n];}catch(_){}
-        out.push({m:m,rgb:rgb,box:b,score:d.score});
-      });
-      balls.sort(function(a,b){return b.score-a.score;});
-      out.balls=balls;
-      return out;
-    });
-  }
   function seekTo(t){
     return new Promise(function(res){
       var done=false;function fin(){if(done)return;done=true;v.removeEventListener('seeked',fin);setTimeout(res,30);}
@@ -2662,149 +2611,16 @@ document.addEventListener('vidloaded',function(){
       v.currentTime=Math.max(0,Math.min(v.duration||t,t));
     });
   }
-  function cd(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);}
-  /* ---- suivi ---- */
-  function build(samples,att,over){
-    var IA=['AG','ARG','DC','ARD','AD','P'],ID=['D1','D2','D3','D4','D5','D6'];
-    var d0=samples[0],base=baseFrame('0-6');
-    var inField=d0.filter(function(d){return !(d.m[0]>=37.5&&Math.abs(d.m[1]-10)<3.5);});
-    var cA=att.rgb.slice(),cB=null,far=-1;
-    inField.forEach(function(d){var x=cd(d.rgb,cA);if(x>far){far=x;cB=d.rgb.slice();}});
-    if(!cB)cB=[255-cA[0],255-cA[1],255-cA[2]];
-    for(var it=0;it<5;it++){
-      var sa=[0,0,0,0],sb=[0,0,0,0];
-      inField.forEach(function(d){var s=cd(d.rgb,cA)<=cd(d.rgb,cB)?sa:sb;s[0]+=d.rgb[0];s[1]+=d.rgb[1];s[2]+=d.rgb[2];s[3]++;});
-      if(sa[3])cA=[sa[0]/sa[3],sa[1]/sa[3],sa[2]/sa[3]];if(sb[3])cB=[sb[0]/sb[3],sb[1]/sb[3],sb[2]/sb[3]];
-    }
-    function teamOf(d){return cd(d.rgb,cA)<=cd(d.rgb,cB)?'A':'D';}
-    var cur={},gkd=null,gd=1e9;
-    d0.forEach(function(d){var q=Math.hypot(d.m[0]-40,d.m[1]-10);if(d.m[0]>=37.5&&Math.abs(d.m[1]-10)<3.5&&q<gd){gd=q;gkd=d;}});
-    var A0=d0.filter(function(d){return d!==gkd&&teamOf(d)==='A';}),D0=d0.filter(function(d){return d!==gkd&&teamOf(d)==='D';});
-    A0.sort(function(a,b){return Math.hypot(a.m[0]-40,a.m[1]-10)-Math.hypot(b.m[0]-40,b.m[1]-10);});
-    var piv=A0.length?A0.shift():null;A0=A0.slice(0,5);A0.sort(function(a,b){return a.m[1]-b.m[1];});
-    IA.forEach(function(id){cur[id]=base.pos[id].slice();});ID.forEach(function(id){cur[id]=base.pos[id].slice();});cur.GK=base.pos.GK.slice();
-    var exist={};
-    A0.forEach(function(d,i){cur[IA[i]]=d.m.slice();exist[IA[i]]=1;});
-    if(piv){cur.P=piv.m.slice();exist.P=1;}
-    D0.sort(function(a,b){return a.m[1]-b.m[1];});D0=D0.slice(0,6);
-    D0.forEach(function(d,i){cur[ID[i]]=d.m.slice();exist[ID[i]]=1;});
-    if(gkd){cur.GK=gkd.m.slice();exist.GK=1;}
-    Object.keys(over||{}).forEach(function(id){cur[id]=over[id].slice();exist[id]=1;});
-    var missing=0;ALL.forEach(function(id){if(!exist[id])missing++;});
-    var start={};ALL.forEach(function(id){start[id]=cur[id].slice();});
-    var traj=samples.map(function(){return {};}),bxs=samples.map(function(){return {};}),k,vel={},coast={};
-    ALL.forEach(function(id){traj[0][id]=cur[id].slice();vel[id]=[0,0];coast[id]=0;});
-    var maxJump=Math.max(3.2,8*(cfg.step)+1.5);
-    for(k=1;k<samples.length;k++){
-      var ds=samples[k],used={};
-      (function(kk){
-        function match(ids,filt){
-          var pairs=[],got={};
-          ids.forEach(function(id){
-            var pr=[cur[id][0]+vel[id][0],cur[id][1]+vel[id][1]];
-            ds.forEach(function(d,di){
-              if(!filt(d))return;
-              var q=Math.hypot(d.m[0]-pr[0],d.m[1]-pr[1]);
-              if(q<maxJump)pairs.push([q+0.3*Math.hypot(d.m[0]-cur[id][0],d.m[1]-cur[id][1]),id,di]);
-            });
-          });
-          pairs.sort(function(a,b){return a[0]-b[0];});
-          pairs.forEach(function(p){if(got[p[1]]!==undefined||used[p[2]])return;got[p[1]]=p[2];used[p[2]]=1;});
-          ids.forEach(function(id){
-            if(got[id]!==undefined){
-              var n=ds[got[id]].m;
-              vel[id]=[0.5*vel[id][0]+0.5*(n[0]-cur[id][0]),0.5*vel[id][1]+0.5*(n[1]-cur[id][1])];
-              cur[id]=n.slice();coast[id]=0;bxs[kk][id]=ds[got[id]].box;
-            }else{ // non vue : on prolonge brièvement le mouvement puis on fige
-              coast[id]++;
-              if(coast[id]<=3){cur[id]=[cur[id][0]+vel[id][0]*0.6,cur[id][1]+vel[id][1]*0.6];vel[id]=[vel[id][0]*0.6,vel[id][1]*0.6];}
-              else vel[id]=[0,0];
-            }
-          });
-        }
-        match(['GK'],function(d){return d.m[0]>=36.5&&Math.abs(d.m[1]-10)<5;});
-        match(IA,function(d){return teamOf(d)==='A';});
-        match(ID,function(d){return teamOf(d)==='D';});
-      })(k);
-      ALL.forEach(function(id){traj[k][id]=cur[id].slice();});
-    }
-    var sm=traj.map(function(o){var r={};ALL.forEach(function(id){r[id]=o[id].slice();});return r;});
-    for(k=1;k<traj.length-1;k++)ALL.forEach(function(id){for(var c=0;c<2;c++)sm[k][id][c]=0.25*traj[k-1][id][c]+0.5*traj[k][id][c]+0.25*traj[k+1][id][c];});
-    // ballon : s'il est vu dans le cadre d'une attaquante, c'est elle qui le porte ; sinon il est libre
-    var hold='DC',fbx=0,fby=0,hits=0,hs=[];
-    for(k=0;k<samples.length;k++){
-      var bl=(samples[k].balls||[])[0];
-      if(bl){
-        hits++;var h=null,bq=1e9;
-        IA.forEach(function(id){
-          var bb=bxs[k][id]||(k===0&&null);if(!bb)return;
-          var q=Math.max(Math.abs(bl.c[0]-(bb[0]+bb[2]/2))/(bb[2]*0.75),Math.abs(bl.c[1]-(bb[1]+bb[3]*0.45))/(bb[3]*0.6));
-          if(q<1&&q<bq){bq=q;h=id;}
-        });
-        if(h)hold=h;
-        else if(Hrun){var gm=applyH(Hrun,bl.c[0],bl.c[1]);hold=null;fbx=Math.max(20.3,Math.min(40.4,gm[0]));fby=Math.max(-0.4,Math.min(20.4,gm[1]));}
-      }
-      hs.push({h:hold,x:fbx,y:fby});
-    }
-    var frames=sm.map(function(o,i){
-      var f=baseFrame('0-6');ALL.forEach(function(id){f.pos[id]=[Math.max(20.3,Math.min(40.4,o[id][0])),Math.max(-0.4,Math.min(20.4,o[id][1]))];});
-      f.holder=hs[i].h;if(hs[i].h===null){f.bx=hs[i].x;f.by=hs[i].y;}
-      f.note=(i===0&&!hits)?'Ballon non détecté : à placer à la main si besoin.':'';return f;
-    });
-    return {frames:frames,missing:missing,start:start,exist:exist,ballHits:hits};
-  }
   /* ---- déroulé ---- */
   $('#autoStart').addEventListener('click',function(){
-    v.pause();panel.hidden=false;show('autoCfg');setTitle('Conversion automatique');cancelled=false;
+    v.pause();panel.hidden=false;show('autoCfg');setTitle('Conversion en schéma (pointage manuel)');cancelled=false;
     if(fsOn){autoDockIn();panel.scrollTop=0;}
     else{try{panel.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(_){}}
   });
   $('#autoCancel').addEventListener('click',function(){cancelled=true;panel.hidden=true;autoDockOut();});
   document.addEventListener('autoabort',function(){cancelled=true;});
-  $('#autoGo1').addEventListener('click',function(){
-    cfg.dur=parseFloat($('#autoDur').value);cfg.step=parseFloat($('#autoStep').value);cfg.t0=v.currentTime;
-    mode='auto';$('#calOk').textContent='Lancer la détection';
-    frameImg=grabFrame();fitCanvas(cv,frameImg);pts=[];
-    show('autoCalBox');setTitle('1. Repérer le terrain');updCal();
-  });
-  $('#calOk').addEventListener('click',function(){
-    if(mode==='man'){calDone=true;startManual();}else run();
-  });
+  $('#calOk').addEventListener('click',function(){calDone=true;startManual();});
   document.addEventListener('vidloaded',function(){calDone=false;pts=[];});
-  function run(){
-    if(busy)return;busy=true;cancelled=false;
-    var H=homography(pts,DST);
-    if(!H){busy=false;$('#calMsg').textContent='Ces 4 points ne forment pas un terrain valable. Recommence.';return;}
-    Hrun=H;show('autoRun');setTitle('2. Détection des joueuses');
-    $('#runMsg').textContent='Chargement du détecteur (internet requis, environ 15 Mo la première fois)…';$('#runBar').value=0;
-    var box=cropBox(),N=Math.floor(cfg.dur/cfg.step)+1,samples=[],frames0=null,tiles=makeTiles(H,box,v.videoWidth||cv.width,v.videoHeight||cv.height);
-    getDetector().then(function(detect){
-      var k=0;
-      function next(){
-        if(cancelled){busy=false;return Promise.reject(new Error('cancel'));}
-        var t=cfg.t0+k*cfg.step;
-        if(k>=N||t>(v.duration||0)+0.001)return Promise.resolve();
-        $('#runMsg').textContent='Analyse de l\'image '+(k+1)+' / '+N+' (vidéo à '+fmt(t)+')…';
-        $('#runBar').value=Math.round(k/N*100);
-        return seekTo(t).then(function(){
-          var fr=grabFrame();if(k===0)frames0=fr;
-          return detectFrame(detect,fr,H,box,tiles);
-        }).then(function(res){samples.push(res);k++;return next();});
-      }
-      return next();
-    }).then(function(){
-      busy=false;
-      if(samples.length<2||!samples[0].length){
-        show('autoCfg');$('#autoCfg .hint').textContent='Aucune joueuse repérée dans le terrain sélectionné. Vérifie les 4 coins, ou choisis un instant où le jeu est bien visible.';return;
-      }
-      pickTeam(samples,frames0);
-    }).catch(function(err){
-      busy=false;
-      if(err&&err.message==='cancel')return;
-      show('autoCfg');
-      $('#autoCfg .hint').textContent=(/script/.test(String(err&&err.message)))?'Impossible de charger le détecteur : vérifie ta connexion internet puis réessaie.':'La détection a échoué ('+(err&&err.message||'erreur')+'). Réessaie.';
-    });
-  }
   /* ---- pointage manuel ---- */
   var ITEMS=[['AG','Ailière gauche (AG)','A'],['ARG','Arrière gauche (ARG)','A'],['DC','Demi-centre (DC)','A'],['ARD','Arrière droite (ARD)','A'],['AD','Ailière droite (AD)','A'],['P','Pivot (P)','A'],
     ['D1','Défenseuse 1 (extérieur gauche)','D'],['D2','Défenseuse 2 (gauche)','D'],['D3','Défenseuse 3 (centre gauche)','D'],['D4','Défenseuse 4 (centre droit)','D'],['D5','Défenseuse 5 (droite)','D'],['D6','Défenseuse 6 (extérieur droit)','D'],['BALL','le BALLON','B']];
@@ -2914,70 +2730,6 @@ document.addEventListener('vidloaded',function(){
     S.dt=0;S.frames=[f];S.libId=null;S.title='Vidéo '+fmt(mt);syncTitle();setCur(0);renderLib();
     manClose('Nouvelle séquence créée depuis la vidéo. Ajoute les moments suivants avec « Convertir » puis « Pointage manuel ».');
   });
-  function pickTeam(samples,fr){
-    show('autoTeam');setTitle('3. Quelle équipe attaque ?');$('#revBtns').hidden=true;
-    tcv.width=fr.width;tcv.height=fr.height;tcv.onpointermove=null;tcv.onpointerup=null;tcv.onpointercancel=null;
-    var d0=samples[0].filter(function(d){return !(d.m[0]>=37.5&&Math.abs(d.m[1]-10)<3.5);});
-    function draw(sel){
-      tctx.drawImage(fr,0,0);
-      d0.forEach(function(d){
-        var b=d.box;tctx.lineWidth=Math.max(2,tcv.width/400);tctx.strokeStyle=(d===sel)?'#ffe600':'#00ffd0';tctx.strokeRect(b[0],b[1],b[2],b[3]);
-      });
-    }
-    draw(null);
-    $('#teamMsg').textContent='Touche une joueuse de l\'équipe qui attaque ('+d0.length+' personnes repérées sur le demi-terrain).';
-    tcv.onpointerdown=function(e){
-      e.preventDefault();var p=cpt(e,tcv),best=null,bd=1e9;
-      d0.forEach(function(d){var b=d.box,cx=b[0]+b[2]/2,cy=b[1]+b[3]/2,q=Math.hypot(cx-p[0],cy-p[1]);if(q<bd){bd=q;best=d;}});
-      if(!best)return;draw(best);
-      review(samples,best,build(samples,best),fr);
-    };
-  }
-  /* vérification du point de départ : on glisse les pastilles mal placées avant de lancer le suivi */
-  function review(samples,att,res,fr){
-    show('autoTeam');setTitle('4. Vérifier le point de départ');
-    var Hi=inv3(Hrun),px={},over={},drag2=null,r=Math.max(9,tcv.width/85);
-    tcv.width=fr.width;tcv.height=fr.height;
-    ALL.forEach(function(id){px[id]=applyH(Hi,res.start[id][0],res.start[id][1]);});
-    function isD(id){return /^D\d/.test(id);}
-    function lab(id){return id==='GK'?'G':(isD(id)?id.slice(1):id);}
-    function draw(){
-      tctx.drawImage(fr,0,0);
-      ALL.forEach(function(id){
-        var p=px[id],ok=res.exist[id]||over[id],col=id==='GK'?'#2fbf71':isD(id)?'#2f6bff':'#ffb020';
-        tctx.beginPath();tctx.arc(p[0],p[1],r,0,7);tctx.fillStyle=col;tctx.globalAlpha=ok?0.95:0.6;tctx.fill();tctx.globalAlpha=1;
-        tctx.lineWidth=ok?2:3;tctx.strokeStyle=ok?'#000':'#ff2d2d';if(!ok)tctx.setLineDash([5,4]);tctx.stroke();tctx.setLineDash([]);
-        tctx.fillStyle=isD(id)?'#fff':'#000';tctx.font='bold '+Math.round(r*0.95)+'px sans-serif';tctx.textAlign='center';tctx.textBaseline='middle';tctx.fillText(lab(id),p[0],p[1]+1);
-      });
-    }
-    draw();
-    var miss=0;ALL.forEach(function(id){if(!res.exist[id])miss++;});
-    $('#teamMsg').textContent='Chaque pastille est posée aux pieds d\'une joueuse (orange = attaque, bleu = défense, vert = gardienne).'+(miss?' '+miss+' pastille(s) à bord rouge pointillé n\'ont pas été trouvées : glisse-les à la bonne place.':'')+' Corrige en glissant, puis valide.';
-    $('#revBtns').hidden=false;
-    tcv.onpointerdown=function(e){
-      e.preventDefault();var p=cpt(e,tcv),best=null,bd=1e9;
-      ALL.forEach(function(id){var q=Math.hypot(px[id][0]-p[0],px[id][1]-p[1]);if(q<bd){bd=q;best=id;}});
-      if(best&&bd<r*2.6){drag2=best;try{tcv.setPointerCapture(e.pointerId);}catch(_){}}
-    };
-    tcv.onpointermove=function(e){
-      if(!drag2)return;e.preventDefault();var p=cpt(e,tcv);px[drag2]=p;
-      var m=applyH(Hrun,p[0],p[1]);over[drag2]=[Math.max(20.3,Math.min(40.4,m[0])),Math.max(-0.4,Math.min(20.4,m[1]))];draw();
-    };
-    tcv.onpointerup=tcv.onpointercancel=function(){drag2=null;};
-    $('#revOk').onclick=function(){$('#revBtns').hidden=true;finish(build(samples,att,over),samples);};
-    $('#revRedo').onclick=function(){pickTeam(samples,fr);};
-  }
-  function finish(res,samples){
-    var base=($('#vidName').textContent||'vidéo').replace(/\.[^.]+$/,'').slice(0,24);
-    var e={id:uid(),title:'Vidéo '+base+' '+fmt(cfg.t0),mode:'half',defense:'0-6',defLabels:FORMS['0-6'].lab.slice(),frames:res.frames,updated:Date.now(),locked:false,dt:Math.round(cfg.step*1000),vt0:cfg.t0};
-    LIB.unshift(e);writeLib();renderLib();
-    panel.hidden=true;autoDockOut();
-    openEntry(e.id);
-    if(fsOn){if(fsLayout!=='split'){setLayout('split',true);}if(window.__syncUI)window.__syncUI();syncApply();}
-    var bm=res.ballHits?(' Ballon vu sur '+res.ballHits+' image(s).'):' Ballon non repéré : à placer à la main.';
-    if(fsOn)fsToast('Séquence créée ('+res.frames.length+' étapes)'+(res.missing?', '+res.missing+' joueuse(s) non repérée(s)':'')+'. Lance la vidéo : le schéma la suit.');
-    hint('Séquence créée à partir de la vidéo ('+res.frames.length+' étapes, '+Math.round(cfg.step*1000)/1000+' s entre chaque), calée sur la vidéo : en plein écran « Schéma + vidéo », le schéma suit la lecture.'+bm+' '+(res.missing?res.missing+' joueuse(s) non repérée(s) restent à leur place d\'origine. ':'')+'Corrige à la main les positions douteuses puis « Mettre à jour ».');
-  }
 })();
 
 /* pas de zoom */
