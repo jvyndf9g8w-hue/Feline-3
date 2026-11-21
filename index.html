@@ -142,6 +142,34 @@ body.viewer .vid{display:none}
 .vtop{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .vmeta{opacity:.7;font-size:.88em}
 body.viewer .vlib{display:none}
+.cutsteps{display:flex;gap:6px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+.stp{padding:6px 12px;border-radius:999px;border:2px solid var(--line);font-weight:700;opacity:.55}
+.stp.now{opacity:1;border-color:var(--accent)}
+.stp.ok{opacity:1;background:#1f9d4d;color:#fff;border-color:#1f9d4d}
+.cutinfo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font:700 20px/1.1 ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+.cutinfo b{padding:6px 10px;border-radius:8px}
+.cutinfo .gs{background:#1f9d4d;color:#fff}.cutinfo .rs{background:#d93a3a;color:#fff}.cutinfo .gx{background:var(--line);opacity:.8}
+.bigg,.bigr,.bigcut{min-height:54px;font-size:1.05em;font-weight:700}
+.bigg{background:#1f9d4d!important;color:#fff!important;border-color:#1f9d4d!important}
+.bigr{background:#d93a3a!important;color:#fff!important;border-color:#d93a3a!important}
+.cutbox .btn[disabled]{opacity:.4;pointer-events:none}
+.cuttl{height:60px!important}
+#fsVMarks i.mk,.cuttlz i.mk{position:absolute;top:-4px;bottom:-2px;width:0}
+#fsVMarks i.ms,.cuttlz i.ms{border-left:5px solid #2ecc71}
+#fsVMarks i.me,.cuttlz i.me{border-left:5px solid #ff4d4d}
+#fsVMarks i.mk b,.cuttlz i.mk b{position:absolute;top:2px;font:800 12px/1.2 var(--body,system-ui,sans-serif);padding:3px 7px;border-radius:6px;color:#fff;white-space:nowrap;max-width:none;background:#000;pointer-events:none}
+#fsVMarks i.ms b,.cuttlz i.ms b{left:0;background:#1f9d4d}
+#fsVMarks i.me b,.cuttlz i.me b{right:0;left:auto;background:#d93a3a}
+#fsVMarks i.sel,.cuttlz i.sel{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(255,200,0,.55) 0 6px,rgba(255,160,0,.32) 6px 12px)}
+#fsVMarks i.dn,.cuttlz i.dn{position:absolute;top:0;bottom:0;background:rgba(120,140,160,.4);border-left:2px solid #6b7b8c;border-right:2px solid #6b7b8c}
+#fsVMarks i.dn b,.cuttlz i.dn b{position:absolute;bottom:1px;left:2px;top:auto;max-width:calc(100% - 4px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 10px/1.2 var(--body,system-ui,sans-serif);padding:1px 4px;border-radius:4px;background:rgba(0,0,0,.7);color:#ddd}
+#fsVSeq{position:absolute;z-index:2;left:6px;top:6px;display:flex;gap:10px;align-items:center;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,.78);color:#fff;font:700 18px/1 ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;pointer-events:none}
+#fsVSeq[hidden]{display:none}
+#fsVSeq .gs{color:#46e07f}#fsVSeq .rs{color:#ff7b7b}#fsVSeq em{font:600 14px/1 system-ui,sans-serif;opacity:.85}
+#cutModal .namebox label{display:grid;gap:4px;font-weight:700}
+#fsVMark{color:#2ecc71!important}#fsVEnd{color:#ff6b6b!important}
+#fsVidCtl .vb#fsVMark,#fsVidCtl .vb#fsVEnd,#fsVidCtl .vb#fsVQ5,#fsVidCtl .vb#fsVQ10{min-width:46px;font-size:14px;font-weight:800}
+#fsVidCtl .vb[disabled]{opacity:.4}
 #fsVMark{position:relative}
 #fsVMark .n,#fsVCut .n{position:absolute;top:2px;right:-2px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:#e5322d;color:#fff;font:700 11px/16px var(--body);text-align:center}
 #fsVMark .n[hidden],#fsVCut .n[hidden]{display:none}
@@ -351,7 +379,7 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <g id="ink"><rect id="inkCap" x="-80" y="-80" width="260" height="260" fill="transparent"/><g id="inkStrokes" style="pointer-events:none"></g></g>
     </svg>
     <div id="fsVidWrap">
-      <div id="vstage"><svg id="vInk" aria-hidden="true"><g id="vInkS"></g></svg><span id="fsVTime">00:00.00</span></div>
+      <div id="vstage"><svg id="vInk" aria-hidden="true"><g id="vInkS"></g></svg><span id="fsVTime">00:00.00</span><div id="fsVSeq" hidden></div></div>
       <div id="fsVidCtl">
         <div id="fsVScrub" role="slider" aria-label="Position dans la vidéo" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
           <canvas id="fsVRuler"></canvas>
@@ -361,12 +389,11 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
         </div>
         <button type="button" class="vb" id="fsVPlay" aria-label="Lecture / pause"></button>
         <button type="button" class="vb" id="fsVRate" aria-label="Vitesse">1/1</button>
-        <button type="button" class="vb" id="fsVMark" aria-label="Début de la zone">Début<span class="n" id="fsVMarkN" hidden></span></button>
-        <button type="button" class="vb" id="fsVEnd" aria-label="Fin de la zone">Fin</button>
-        <button type="button" class="vb" id="fsVQ5" aria-label="Zone de 5 secondes">+5s</button>
-        <button type="button" class="vb" id="fsVQ10" aria-label="Zone de 10 secondes">+10s</button>
-        <button type="button" class="vb" id="fsVMode" aria-label="Mode : supprimer ou garder">Suppr.</button>
-        <button type="button" class="vb" id="fsVCut" aria-label="Découper et exporter la vidéo"><svg viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="3" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="6" cy="17.5" r="3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M8.5 8.3L21 19M8.5 15.7L21 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+        <button type="button" class="vb" id="fsVMark" aria-label="Début de la séquence">&#9654;Début</button>
+        <button type="button" class="vb" id="fsVEnd" aria-label="Fin de la séquence">&#9632;Fin</button>
+        <button type="button" class="vb" id="fsVQ5" aria-label="Fin = début plus 5 secondes">+5s</button>
+        <button type="button" class="vb" id="fsVQ10" aria-label="Fin = début plus 10 secondes">+10s</button>
+        <button type="button" class="vb" id="fsVCut" aria-label="Couper la séquence"><svg viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="3" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="6" cy="17.5" r="3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M8.5 8.3L21 19M8.5 15.7L21 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
         <button type="button" class="vb" data-vf="-1" aria-label="Image précédente"><svg viewBox="0 0 24 24"><path d="M4 5v14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M20 5v14L8 12z" fill="currentColor"/></svg></button>
         <button type="button" class="vb" data-vf="1" aria-label="Image suivante"><svg viewBox="0 0 24 24"><path d="M20 5v14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M4 5v14l12-7z" fill="currentColor"/></svg></button>
         <button type="button" class="vb" data-vs="-5" aria-label="Reculer de 5 secondes"></button>
@@ -427,34 +454,28 @@ textarea{width:100%;min-height:84px;padding:10px 12px;border:1px solid var(--lin
       <button type="button" class="btn primary" id="vidStep">+ Étape sur le terrain (position actuelle)</button>
       <button type="button" class="btn" id="autoStart">Convertir automatiquement en schéma (15 s)</button>
       <div class="cutbox" id="cutBox">
-        <div class="cuthead"><strong>Zones de découpe</strong><span class="grow"></span><span class="vidt" id="cutSum">Aucune zone</span></div>
-        <p class="hint">Mets la vidéo au début voulu et touche « Début ici », puis à la fin voulue et touche « Fin ici ». Ou crée une zone rapide de 5 ou 10 s à partir de l'image affichée. Donne un nom à chaque zone : la vidéo exportée portera ce nom.</p>
-        <div class="cuttl" id="cutTL" aria-label="Zones sur la vidéo"><div class="cuttlz" id="cutTLz"></div><div class="cuttlh" id="cutTLh"></div></div>
+        <div class="cuthead"><strong>Découper une séquence</strong><span class="grow"></span><span class="vidt" id="cutSum">Aucune séquence en cours</span></div>
+        <ol class="cutsteps" id="cutSteps"><li class="stp">① Début</li><li class="stp">② Fin</li><li class="stp">③ Couper</li><li class="stp">④ Nommer</li></ol>
+        <div class="cutinfo" id="cutInfo"></div>
+        <div class="cuttl" id="cutTL" aria-label="Séquence sur la vidéo"><div class="cuttlz" id="cutTLz"></div><div class="cuttlh" id="cutTLh"></div></div>
         <div class="cuttlt"><span id="cutTLt">0:00,0 / 0:00,0</span></div>
+        <p class="hint">Une séquence à la fois : place la vidéo au début voulu → « Début ici », puis à la fin voulue → « Fin ici », puis « Couper ». Tu donnes ensuite un nom : la séquence est enregistrée dans la vidéothèque.</p>
         <div class="autorow">
-          <button type="button" class="btn primary" id="cutStart">&#9654; Début ici</button>
-          <button type="button" class="btn primary" id="cutEnd">&#9632; Fin ici</button>
-          <button type="button" class="btn" id="cutQ5">Zone +5 s</button>
-          <button type="button" class="btn" id="cutQ10">Zone +10 s</button>
+          <button type="button" class="btn bigg" id="cutStart">&#9654; Début ici</button>
+          <button type="button" class="btn bigr" id="cutEnd">&#9632; Fin ici</button>
+          <button type="button" class="btn" id="cutQ5">Fin = début + 5 s</button>
+          <button type="button" class="btn" id="cutQ10">Fin = début + 10 s</button>
         </div>
-        <p class="hint cutpend" id="cutPend" hidden></p>
-        <p class="hint" id="cutMsg"></p>
-        <ul class="liblist" id="cutList"></ul>
+        <p class="hint cutpend" id="cutMsg"></p>
+        <label class="lbl" for="cutName">Nom de la séquence (tu peux aussi le donner après la découpe)</label>
+        <input type="text" id="cutName" class="zname" maxlength="60" placeholder="Séquence 1">
         <div class="autorow">
-          <div class="seg" id="cutModeSeg" role="group" aria-label="Mode de la vidéo finale">
-            <button type="button" data-m="cut" aria-pressed="true">Supprimer les zones</button>
-            <button type="button" data-m="keep" aria-pressed="false">Garder les zones</button>
-          </div>
+          <button type="button" class="btn" id="cutPlay">&#9654; Revoir la séquence</button>
+          <button type="button" class="btn primary bigcut" id="cutGo">&#9986; Couper la séquence</button>
+          <button type="button" class="btn danger" id="cutClear">Annuler la séquence</button>
         </div>
-        <p class="hint" id="cutExplain"></p>
-        <label class="lbl" for="cutFinal">Nom de la vidéo finale (toutes les zones)</label>
-        <input type="text" id="cutFinal" class="zname" maxlength="60" placeholder="nom-decoupe">
-        <div class="autorow">
-          <button type="button" class="btn" id="cutPrev">Aperçu du résultat</button>
-          <button type="button" class="btn danger" id="cutClear">Effacer les zones</button>
-        </div>
-        <button type="button" class="btn primary" id="cutGo">Découper et exporter toutes les zones</button>
-        <p class="hint">Chaque zone a aussi son bouton « Exporter » : la vidéo prend le nom de la zone et se range dans la vidéothèque. L'export se fait en temps réel : garde l'écran allumé et l'appli au premier plan. Tout reste sur ton appareil.</p>
+        <p class="hint">La découpe se fait en temps réel (comme une lecture) : garde l'écran allumé et l'appli au premier plan. Tout reste sur ton appareil.</p>
+        <div id="cutDoneBox" hidden><strong>Déjà découpées dans cette vidéo</strong><ul class="liblist" id="cutDone"></ul></div>
       </div>
     </div>
     <div class="auto" id="autoPanel" hidden>
@@ -1796,169 +1817,130 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
   $('#vidDrag').addEventListener('pointercancel',function(){mv=false;});
 })();
 
-/* découpage par zones (début / fin / nom) + bibliothèque de vidéos */
+/* découpe d'une séquence vidéo : Début → Fin → Couper → Nommer → bibliothèque */
 (function(){
-  var v=$('#vid'),zones=[],pend=null,cutMode='cut',PAD=10,busy=false,prev=false,cancel=false,finalName='',zseq=0,playZ=null;
+  var v=$('#vid'),seq={s:null,e:null,name:''},done=[],PAD=10,busy=false,cancel=false,playS=false,loadedKey='';
   var ac=null,srcNode=null,dest=null,mon=null,wake=null,resUrl=null;
-  try{if(localStorage.getItem('cutmode')==='keep')cutMode='keep';}catch(_){}
   function D(){return v.duration||0;}
   function r2(x){return Math.round(x*100)/100;}
   function fmt(s){s=Math.max(0,s||0);var m=Math.floor(s/60),r=s-m*60;return m+':'+(r<10?'0':'')+r.toFixed(1).replace('.',',');}
   function fmtS(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),r=s-m*60;return m+':'+(r<10?'0':'')+r;}
   function toast(m){try{fsToast(m);}catch(_){}var s=$('#cutMsg');if(s)s.textContent=m;}
-  function key(){return ($('#vidName').textContent||'')+':'+Math.round(D());}
-  function save(){try{localStorage.setItem('cutzones:'+key(),JSON.stringify({z:zones,f:finalName}));}catch(_){}}
-  function okZ(z){return z&&isFinite(z.s)&&isFinite(z.e)&&z.e>z.s&&z.s>=0;}
-  function sortZ(){zones.sort(function(a,b){return a.s-b.s||a.e-b.e;});}
-  function nextName(){
-    var n=zones.length+1;
-    for(;;){var nm='Zone '+n;if(!zones.some(function(z){return z.name===nm;}))return nm;n++;}
-  }
-  function restore(){
-    zones=[];pend=null;finalName='';
+  function key(){return ($('#vidName').textContent||'')+'|'+Math.round(D());}
+  function save(){try{if(loadedKey)localStorage.setItem('cutseq:'+loadedKey,JSON.stringify({q:seq,d:done}));}catch(_){}}
+  function restore(force){
+    var k=key();
+    if(!force&&k===loadedKey)return;          // la vidéo a seulement été déplacée / rechargée : on garde la séquence en cours
+    loadedKey=k;seq={s:null,e:null,name:''};done=[];
     try{
-      var s=localStorage.getItem('cutzones:'+key());
-      if(s){var o=JSON.parse(s);if(o&&Array.isArray(o.z))zones=o.z.filter(okZ);finalName=(o&&o.f)||'';}
-      else{
-        var s2=localStorage.getItem('cutmarks:'+key());
-        if(s2){var a=JSON.parse(s2);if(Array.isArray(a))a.forEach(function(m){if(typeof m==='number'&&m>=0&&m<D()-0.3)zones.push({id:++zseq,name:nextName(),s:r2(m),e:r2(Math.min(D(),m+10))});});}
+      var s=localStorage.getItem('cutseq:'+k);
+      if(s){var o=JSON.parse(s);
+        if(o&&o.q&&(o.q.s==null||isFinite(o.q.s))){seq={s:o.q.s==null?null:+o.q.s,e:(o.q.e==null||!isFinite(o.q.e))?null:+o.q.e,name:String(o.q.name||'')};}
+        if(o&&Array.isArray(o.d))done=o.d.filter(function(x){return x&&isFinite(x.s)&&isFinite(x.e)&&x.e>x.s;});
       }
     }catch(_){}
-    zones.forEach(function(z){z.id=++zseq;});
-    sortZ();render();
+    render();
   }
-  function addZone(s,e){
-    var d=D();if(!d){toast('Charge d\'abord une vidéo.');return null;}
-    s=Math.max(0,s);e=Math.min(d,e);
-    if(e-s<0.3){toast('Zone trop courte : place la fin plus loin.');return null;}
-    var z={id:++zseq,name:nextName(),s:r2(s),e:r2(e)};
-    zones.push(z);sortZ();save();render();
-    toast('« '+z.name+' » : '+fmt(z.s)+' → '+fmt(z.e)+' ('+Math.round(z.e-z.s)+' s). Tu peux la renommer dans la liste.');
-    return z;
-  }
+  function safeName(n){return String(n||'').replace(/[\\\/:*?"<>|]+/g,' ').replace(/\s+/g,' ').trim().slice(0,60);}
+  /* ---- les 4 étapes ---- */
   function setStart(){
     if(!D()){toast('Charge d\'abord une vidéo.');return;}
-    pend=r2(v.currentTime);render();toast('Début posé à '+fmt(pend)+'. Avance la vidéo jusqu\'à la fin voulue puis touche « Fin ».');
+    seq.s=r2(v.currentTime);if(seq.e!=null&&seq.e<=seq.s+0.25)seq.e=null;
+    save();render();toast('① Début posé à '+fmt(seq.s)+'. Avance la vidéo jusqu\'à la fin voulue, puis touche « Fin ».');
   }
   function setEnd(){
-    if(pend==null){toast('Pose d\'abord le début (bouton « Début »).');return;}
-    var e=v.currentTime;
-    if(e<=pend+0.25){toast('La fin doit être après le début ('+fmt(pend)+').');return;}
-    var s=pend;pend=null;addZone(s,e);
+    if(!D()){toast('Charge d\'abord une vidéo.');return;}
+    if(seq.s==null){toast('Pose d\'abord le début : touche « Début » sur l\'image où la séquence commence.');return;}
+    var e=r2(v.currentTime);
+    if(e<=seq.s+0.25){toast('La fin doit être après le début ('+fmt(seq.s)+') : avance la vidéo puis touche « Fin ».');return;}
+    seq.e=e;save();render();toast('② Fin posée à '+fmt(seq.e)+' ('+Math.round(seq.e-seq.s)+' s). Touche maintenant « Couper ».');
   }
-  function quick(n){var s=v.currentTime;pend=null;addZone(s,s+n);}
-  /* listes de plages */
-  function ranges(){
-    var d=D(),out=[];
-    zones.slice().sort(function(a,b){return a.s-b.s;}).forEach(function(z){
-      var r=[Math.max(0,z.s),Math.min(d,z.e)];if(r[1]<=r[0])return;
-      var l=out[out.length-1];
-      if(l&&r[0]<=l[1]+0.001)l[1]=Math.max(l[1],r[1]);else out.push(r);
-    });
-    return out;
+  function endPlus(n){
+    var d=D();if(!d){toast('Charge d\'abord une vidéo.');return;}
+    if(seq.s==null)seq.s=r2(v.currentTime);
+    seq.e=r2(Math.min(d,seq.s+n));
+    if(seq.e<=seq.s+0.25){toast('Pas assez de vidéo après le début.');seq.e=null;save();render();return;}
+    save();render();toast('Séquence de '+Math.round(seq.e-seq.s)+' s : '+fmt(seq.s)+' → '+fmt(seq.e)+'. Touche « Couper ».');
   }
-  function comp(c,d){
-    var out=[],p=0;
-    c.forEach(function(r){if(r[0]-p>0.15)out.push([p,r[0]]);p=Math.max(p,r[1]);});
-    if(d-p>0.15)out.push([p,d]);
-    return out;
+  function clearSeq(){seq={s:null,e:null,name:''};playS=false;save();render();toast('Séquence annulée : repars de « Début ».');}
+  function playSeq(){
+    if(seq.s==null||seq.e==null){toast('Pose le début et la fin d\'abord.');return;}
+    v.currentTime=seq.s;playS=true;var p=v.play();if(p&&p.catch)p.catch(function(){});
+    (function chk(){
+      if(!playS)return;
+      if(v.currentTime>=seq.e-0.03){v.pause();playS=false;return;}
+      if(v.paused&&!v.seeking&&v.readyState>=2&&v.currentTime<seq.e-0.05){playS=false;return;}
+      requestAnimationFrame(chk);
+    })();
   }
-  function removedList(){return cutMode==='keep'?comp(ranges(),D()):ranges();}
-  function keptList(){return cutMode==='keep'?ranges().filter(function(r){return r[1]-r[0]>0.15;}):comp(ranges(),D());}
-  function sum(a){return a.reduce(function(s,r){return s+(r[1]-r[0]);},0);}
-  function safeName(n){return String(n||'').replace(/[\\\/:*?"<>|]+/g,' ').replace(/\s+/g,' ').trim().slice(0,60);}
   /* ---- affichage ---- */
-  var HUES=[28,205,145,330,50,265];
   function render(){
-    var list=$('#cutList');list.innerHTML='';
-    zones.forEach(function(z,i){
-      var li=document.createElement('li');li.className='zrow';li.style.setProperty('--zc','hsl('+HUES[i%HUES.length]+' 85% 52%)');
-      var head=document.createElement('div');head.className='zhead';
-      var n=document.createElement('span');n.className='zn';n.textContent=String(i+1);
-      var inp=document.createElement('input');inp.type='text';inp.className='zname';inp.value=z.name;inp.maxLength=40;inp.placeholder='Nom de la zone';inp.setAttribute('aria-label','Nom de la zone '+(i+1));
-      inp.addEventListener('input',function(){z.name=inp.value;save();paintMarks();paintTL();});
-      var t=document.createElement('span');t.className='zt';t.textContent=fmt(z.s)+' → '+fmt(z.e)+' · '+Math.round(z.e-z.s)+' s';
-      head.appendChild(n);head.appendChild(inp);head.appendChild(t);
-      var acts=document.createElement('div');acts.className='zacts';
-      function b(l,fn,cls){var x=document.createElement('button');x.type='button';x.className='btn'+(cls?' '+cls:'');x.textContent=l;x.addEventListener('click',fn);acts.appendChild(x);}
-      b('▶ Voir',function(){playZone(z);},'primary');
-      b('Début ici',function(){var s=v.currentTime;if(s>=z.e-0.3){toast('Le début doit être avant la fin ('+fmt(z.e)+').');return;}z.s=r2(s);sortZ();save();render();});
-      b('Fin ici',function(){var e=v.currentTime;if(e<=z.s+0.3){toast('La fin doit être après le début ('+fmt(z.s)+').');return;}z.e=r2(Math.min(D(),e));save();render();});
-      b('Exporter',function(){exportRanges([[z.s,z.e]],safeName(z.name)||('zone-'+(i+1)),'« '+z.name+' »');});
-      b('Schéma',function(){v.pause();v.currentTime=z.s;$('#autoDur').value=(z.e-z.s)<=7.5?'5':(z.e-z.s)<=12.5?'10':(z.e-z.s)<=17.5?'15':(z.e-z.s)<=25?'20':(z.e-z.s)<=45?'30':'60';$('#autoStart').click();});
-      b('Retirer',function(){zones.splice(i,1);save();render();});
-      li.appendChild(head);li.appendChild(acts);list.appendChild(li);
+    var hs=seq.s!=null,he=seq.e!=null,ok=hs&&he;
+    var st=$('#cutSteps').children;
+    [hs,he,ok&&!busy,false].forEach(function(dn,i){});
+    st[0].className='stp'+(hs?' ok':' now');
+    st[1].className='stp'+(he?' ok':(hs?' now':''));
+    st[2].className='stp'+(ok?' now':'');
+    st[3].className='stp';
+    $('#cutInfo').innerHTML=(hs?'<b class="gs">DÉBUT '+fmt(seq.s)+'</b>':'<b class="gx">DÉBUT —</b>')+'<span>→</span>'+(he?'<b class="rs">FIN '+fmt(seq.e)+'</b>':'<b class="gx">FIN —</b>')+(ok?'<span class="dur">'+Math.round(seq.e-seq.s)+' s</span>':'');
+    $('#cutGo').disabled=!ok;$('#cutPlay').disabled=!ok;$('#fsVCut').disabled=!ok;
+    $('#cutEnd').disabled=!hs;$('#fsVEnd').disabled=!hs;
+    var nm=$('#cutName');if(document.activeElement!==nm)nm.value=seq.name||'';
+    nm.placeholder='Séquence '+(done.length+1);
+    var chip=$('#fsVSeq');
+    if(hs||he){chip.hidden=false;chip.innerHTML=(hs?'<b class="gs">▶ '+fmt(seq.s)+'</b>':'')+(he?'<b class="rs">■ '+fmt(seq.e)+'</b>':'<em>place la fin</em>')+(ok?'<span>'+Math.round(seq.e-seq.s)+' s</span>':'');}
+    else chip.hidden=true;
+    $('#cutSum').textContent=ok?'Séquence prête : '+Math.round(seq.e-seq.s)+' s':(hs?'Début posé':'Aucune séquence en cours');
+    var dl=$('#cutDone');dl.innerHTML='';
+    $('#cutDoneBox').hidden=!done.length;
+    done.forEach(function(x,i){
+      var li=document.createElement('li');li.className='zrow';li.style.setProperty('--zc','#6b7b8c');
+      var h=document.createElement('div');h.className='zhead';
+      var n=document.createElement('span');n.className='zn';n.textContent='✓';
+      var t=document.createElement('strong');t.textContent=x.name;
+      var tt=document.createElement('span');tt.className='zt';tt.textContent=fmt(x.s)+' → '+fmt(x.e);
+      h.appendChild(n);h.appendChild(t);h.appendChild(tt);
+      var a=document.createElement('div');a.className='zacts';
+      var b1=document.createElement('button');b1.type='button';b1.className='btn';b1.textContent='Voir dans la vidéo';
+      b1.addEventListener('click',function(){v.pause();v.currentTime=x.s;});
+      var b2=document.createElement('button');b2.type='button';b2.className='btn';b2.textContent='Retirer de la liste';
+      b2.addEventListener('click',function(){done.splice(i,1);save();render();});
+      a.appendChild(b1);a.appendChild(b2);li.appendChild(h);li.appendChild(a);dl.appendChild(li);
     });
-    var k=keptList(),n=zones.length;
-    $('#cutSum').textContent=n?(n+(n>1?' zones':' zone')+' · vidéo finale '+fmtS(sum(k))):(pend!=null?'Début posé':'Aucune zone');
-    Array.prototype.forEach.call($('#cutModeSeg').querySelectorAll('button'),function(x){x.setAttribute('aria-pressed',String(x.getAttribute('data-m')===cutMode));});
-    $('#cutExplain').textContent=cutMode==='keep'?'Mode « Garder » : la vidéo finale ne contient que les zones, mises bout à bout.':'Mode « Supprimer » : la vidéo finale contient tout sauf les zones.';
-    $('#cutPend').textContent=pend!=null?'Début posé à '+fmt(pend)+' : place la fin puis touche « Fin ici ».':'';
-    $('#cutPend').hidden=pend==null;
-    $('#fsVMode').textContent=cutMode==='keep'?'Garder':'Suppr.';
-    $('#fsVMarks').classList.toggle('keep',cutMode==='keep');
-    var fn=$('#cutFinal');if(document.activeElement!==fn)fn.value=finalName;
-    var ph=safeName(($('#vidName').textContent||'video').replace(/\.[^.]+$/,''))+'-decoupe';fn.placeholder=ph;
-    var e=$('#fsVMarkN');e.textContent=String(n);e.hidden=!n;
     paintMarks();paintTL();
   }
-  function zoneEl(z,i,d,span,off){
-    var e=document.createElement('i');e.className='z';
-    var w=Math.max(6,(z.e-z.s)/d*span);
-    e.style.left=(off+z.s/d*span)+'px';e.style.width=w+'px';
-    e.style.setProperty('--zc','hsl('+HUES[i%HUES.length]+' 85% 52%)');e.style.setProperty('--zf','hsl('+HUES[i%HUES.length]+' 85% 52% / .42)');
-    var b=document.createElement('b');b.textContent=(i+1)+(w>90&&z.name?' · '+z.name:'');e.appendChild(b);
-    return e;
+  function flag(kind,t,d,span,off,label){
+    var e=document.createElement('i');e.className='mk '+kind;e.style.left=(off+t/d*span)+'px';
+    var b=document.createElement('b');b.textContent=label;e.appendChild(b);return e;
   }
-  function pendEl(d,span,off){
-    var e=document.createElement('i');e.className='pend';e.style.left=(off+pend/d*span)+'px';
-    var b=document.createElement('b');b.textContent='Début';e.appendChild(b);return e;
+  function paintInto(host,span,off){
+    var d=D();
+    host.innerHTML='';
+    done.forEach(function(x){
+      var e=document.createElement('i');e.className='dn';e.style.left=(off+x.s/d*span)+'px';e.style.width=Math.max(4,(x.e-x.s)/d*span)+'px';
+      var b=document.createElement('b');b.textContent=x.name;e.appendChild(b);host.appendChild(e);
+    });
+    if(seq.s!=null&&seq.e!=null){
+      var r=document.createElement('i');r.className='sel';r.style.left=(off+seq.s/d*span)+'px';r.style.width=Math.max(6,(seq.e-seq.s)/d*span)+'px';host.appendChild(r);
+    }
+    if(seq.s!=null)host.appendChild(flag('ms',seq.s,d,span,off,'▶ DÉBUT'));
+    if(seq.e!=null)host.appendChild(flag('me',seq.e,d,span,off,'FIN ■'));
   }
   function paintMarks(){
     var host=$('#fsVMarks'),sc=$('#fsVScrub'),d=D();host.innerHTML='';
     if(!d)return;
     var span=sc.clientWidth-2*PAD;if(span<=0)return;
-    zones.forEach(function(z,i){host.appendChild(zoneEl(z,i,d,span,PAD));});
-    if(pend!=null)host.appendChild(pendEl(d,span,PAD));
+    paintInto(host,span,PAD);
   }
   function paintTL(){
-    var host=$('#cutTLz'),d=D();if(!host)return;host.innerHTML='';
-    if(!d){$('#cutTLh').style.display='none';return;}
+    var host=$('#cutTLz'),d=D();if(!host)return;
+    if(!d){host.innerHTML='';$('#cutTLh').style.display='none';return;}
     var span=host.clientWidth;if(span<=0)return;
-    zones.forEach(function(z,i){host.appendChild(zoneEl(z,i,d,span,0));});
-    if(pend!=null)host.appendChild(pendEl(d,span,0));
+    paintInto(host,span,0);
     var h=$('#cutTLh');h.style.display='';h.style.left=(v.currentTime/d*span)+'px';
     $('#cutTLt').textContent=fmt(v.currentTime)+' / '+fmt(d);
   }
-  /* ---- lecture d'une zone / aperçu ---- */
-  function playZone(z){
-    prev=false;updPrev();v.currentTime=z.s;playZ=z;
-    var p=v.play();if(p&&p.catch)p.catch(function(){});
-    (function chk(){
-      if(playZ!==z)return;
-      if(v.paused&&v.currentTime<z.e-0.05&&v.readyState>=2&&!v.seeking){playZ=null;return;}
-      if(v.currentTime>=z.e-0.03){v.pause();playZ=null;return;}
-      requestAnimationFrame(chk);
-    })();
-  }
-  function inCut(t){var c=removedList();for(var i=0;i<c.length;i++){if(t>=c[i][0]-0.02&&t<c[i][1]-0.02)return c[i];}return null;}
-  function updPrev(){$('#cutPrev').textContent=prev?'Arrêter l\'aperçu':'Aperçu du résultat';}
-  function prevLoop(){
-    if(!prev)return;
-    var c=inCut(v.currentTime);
-    if(c){if(c[1]>=D()-0.05){v.pause();prev=false;updPrev();return;}v.currentTime=c[1];}
-    requestAnimationFrame(prevLoop);
-  }
-  $('#cutPrev').addEventListener('click',function(){
-    if(prev){prev=false;v.pause();updPrev();return;}
-    if(!D())return;
-    if(!zones.length){toast('Pose d\'abord au moins une zone.');return;}
-    var k=keptList();if(!k.length){toast('Tout serait coupé.');return;}
-    playZ=null;prev=true;updPrev();
-    v.currentTime=k[0][0];v.play();requestAnimationFrame(prevLoop);
-  });
-  v.addEventListener('pause',function(){if(prev&&!busy){prev=false;updPrev();}});
-  /* ---- export ---- */
+  /* ---- export de la séquence ---- */
   function audioSetup(){
     var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
     try{
@@ -1981,38 +1963,42 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
       v.addEventListener('seeked',f);v.currentTime=t;setTimeout(f,4000);
     });
   }
+
   var modal=null;
   function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
-  function openModal(title){
+  function openModal(){
     if(modal){modal.remove();modal=null;}
     modal=mk('div');modal.id='cutModal';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');
     var dlg=mk('div','cutdlg');
-    dlg.appendChild(mk('strong',null,title||'Découpage en cours'));
-    var bar=mk('div','cutbar');bar.appendChild(mk('i'));dlg.appendChild(bar);
-    dlg.appendChild(mk('p','hint','Préparation…'));
+    var title=mk('strong',null,'Découpe en cours');dlg.appendChild(title);
+    var bar=mk('div','cutbar');var bi=mk('i');bar.appendChild(bi);dlg.appendChild(bar);
+    var msg=mk('p','hint','Préparation…');dlg.appendChild(msg);
     var res=mk('video');res.controls=true;res.setAttribute('playsinline','');res.hidden=true;dlg.appendChild(res);
+    var nmBox=mk('div','namebox');nmBox.hidden=true;
+    var lbl=mk('label',null,'④ Nom de la séquence');var inp=mk('input','zname');inp.type='text';inp.maxLength=60;lbl.appendChild(inp);nmBox.appendChild(lbl);dlg.appendChild(nmBox);
     var row=mk('div','autorow');
-    var save=mk('button','btn primary','Enregistrer sur l\'appareil');save.type='button';save.hidden=true;
-    var share=mk('button','btn primary','Partager / Photos');share.type='button';share.hidden=true;
+    var lib=mk('button','btn primary','Enregistrer dans la bibliothèque');lib.type='button';lib.hidden=true;
+    var save=mk('button','btn','Sur l\'appareil');save.type='button';save.hidden=true;
+    var share=mk('button','btn','Partager');share.type='button';share.hidden=true;
     var close=mk('button','btn','Annuler');close.type='button';
-    row.appendChild(save);row.appendChild(share);row.appendChild(close);dlg.appendChild(row);
-    modal.appendChild(dlg);document.body.appendChild(modal);
-    return {title:dlg.firstChild,bar:bar.firstChild,msg:dlg.children[2],res:res,save:save,share:share,close:close};
+    row.appendChild(lib);row.appendChild(save);row.appendChild(share);row.appendChild(close);dlg.appendChild(row);
+    modal.appendChild(dlg);(fsElement()||document.body).appendChild(modal);
+    return {title:title,bar:bi,msg:msg,res:res,nmBox:nmBox,inp:inp,lib:lib,save:save,share:share,close:close};
   }
   function closeModal(){if(modal){modal.remove();modal=null;}if(resUrl){URL.revokeObjectURL(resUrl);resUrl=null;}}
-  async function exportRanges(kept,outName,label){
+  async function cutSeq(){
     if(busy)return;
     var d=D();
     if(!d){toast('Charge d\'abord une vidéo.');return;}
-    if(!kept.length){toast('Rien à exporter : pose d\'abord une zone.');return;}
+    if(seq.s==null||seq.e==null){toast('Pose le début puis la fin avant de couper.');return;}
     if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){toast('Le découpage n\'est pas pris en charge par ce navigateur.');return;}
-    busy=true;cancel=false;prev=false;playZ=null;updPrev();v.pause();
-    var ui=openModal('Découpage de '+(label||'la vidéo')),total=sum(kept),done=0,origT=v.currentTime,origRate=v.playbackRate,raf=0,err=null;
+    var a=seq.s,b=seq.e,total=b-a;
+    busy=true;cancel=false;playS=false;v.pause();
+    var ui=openModal(),origT=v.currentTime,origRate=v.playbackRate,raf=0,err=null;
     ui.close.addEventListener('click',function(){
       if(busy){cancel=true;ui.msg.textContent='Annulation…';}else closeModal();
     });
-    ui.msg.textContent='Durée de la vidéo : '+fmtS(total)+'. Ne quitte pas l\'appli et garde l\'écran allumé.';
-    ui.close.textContent='Annuler';
+    ui.msg.textContent='③ Découpe de '+fmt(a)+' → '+fmt(b)+' ('+fmtS(total)+'). Ne quitte pas l\'appli et garde l\'écran allumé.';
     try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen');}catch(_){wake=null;}
     var W=v.videoWidth||1280,H=v.videoHeight||720,sc=Math.min(1,1920/Math.max(W,H));
     W=Math.round(W*sc/2)*2;H=Math.round(H*sc/2)*2;
@@ -2039,26 +2025,21 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
     try{
       if(err)throw err;
       v.playbackRate=1;
-      await seekTo(kept[0][0]);
+      await seekTo(a);
       cx.drawImage(v,0,0,W,H);
       running=true;raf=requestAnimationFrame(tick);
       rec.start(1000);
-      for(var i=0;i<kept.length&&!cancel;i++){
-        var a=kept[i][0],b=kept[i][1];
-        await seekTo(a);
-        await v.play();
-        await new Promise(function(res){
-          (function chk(){
-            if(cancel||v.ended||v.currentTime>=b-0.03){res();return;}
-            var p=Math.min(1,(done+Math.max(0,v.currentTime-a))/total);
-            ui.bar.style.width=(p*100)+'%';
-            ui.msg.textContent='Enregistrement : '+fmtS(done+Math.max(0,v.currentTime-a))+' / '+fmtS(total);
-            requestAnimationFrame(chk);
-          })();
-        });
-        v.pause();
-        done+=b-a;
-      }
+      await v.play();
+      await new Promise(function(res){
+        (function chk(){
+          if(cancel||v.ended||v.currentTime>=b-0.03){res();return;}
+          var p=Math.min(1,Math.max(0,v.currentTime-a)/total);
+          ui.bar.style.width=(p*100)+'%';
+          ui.msg.textContent='③ Enregistrement : '+fmtS(Math.max(0,v.currentTime-a))+' / '+fmtS(total);
+          requestAnimationFrame(chk);
+        })();
+      });
+      v.pause();
       await new Promise(function(r){setTimeout(r,400);});
     }catch(e){err=e;}
     running=false;cancelAnimationFrame(raf);
@@ -2069,76 +2050,74 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
     try{await seekTo(origT);}catch(_){}
     try{if(wake){wake.release();wake=null;}}catch(_){}
     busy=false;
-    if(cancel){closeModal();toast('Découpage annulé.');return;}
+    if(cancel){closeModal();toast('Découpe annulée : ta séquence (début / fin) est conservée.');return;}
     if(err||!chunks.length){
-      ui.title.textContent='Échec du découpage';
-      ui.msg.textContent='Impossible de créer la vidéo sur cet appareil'+(err&&err.message?' ('+err.message+')':'')+'.';
+      ui.title.textContent='Échec de la découpe';
+      ui.msg.textContent='Impossible de créer la vidéo sur cet appareil'+(err&&err.message?' ('+err.message+')':'')+'. Ta séquence (début / fin) est conservée.';
       ui.close.textContent='Fermer';return;
     }
     var type=(rec.mimeType||mime||'video/mp4').split(';')[0];
     var blob=new Blob(chunks,{type:type});
     var ext=/webm/.test(type)?'webm':'mp4';
-    var fname=safeName(outName||'video')+'.'+ext;
     resUrl=URL.createObjectURL(blob);
-    ui.title.textContent='Vidéo prête : '+fname;ui.bar.style.width='100%';
-    ui.msg.textContent=fmtS(total)+' · '+(blob.size/1048576).toFixed(1).replace('.',',')+' Mo';
+    ui.title.textContent='Séquence prête';ui.bar.style.width='100%';
+    ui.msg.textContent=fmtS(total)+' · '+(blob.size/1048576).toFixed(1).replace('.',',')+' Mo. Donne-lui un nom puis enregistre-la.';
     ui.res.src=resUrl;ui.res.hidden=false;
-    ui.save.hidden=false;ui.close.textContent='Fermer';
+    ui.nmBox.hidden=false;ui.inp.value=seq.name||('Séquence '+(done.length+1));
+    ui.lib.hidden=false;ui.save.hidden=false;ui.close.textContent='Fermer sans enregistrer';
+    setTimeout(function(){try{ui.inp.focus();ui.inp.select();}catch(_){}},60);
+    function fname(){return (safeName(ui.inp.value)||('Séquence '+(done.length+1)))+'.'+ext;}
     ui.save.addEventListener('click',function(){
-      var a=document.createElement('a');a.href=resUrl;a.download=fname;document.body.appendChild(a);a.click();a.remove();
+      var an=document.createElement('a');an.href=resUrl;an.download=fname();document.body.appendChild(an);an.click();an.remove();
     });
     try{
-      var file=new File([blob],fname,{type:type});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){
+      if(navigator.canShare&&navigator.canShare({files:[new File([blob],'x.'+ext,{type:type})]})){
         ui.share.hidden=false;
-        ui.share.addEventListener('click',function(){navigator.share({files:[file],title:fname}).catch(function(){});});
+        ui.share.addEventListener('click',function(){var n=fname();navigator.share({files:[new File([blob],n,{type:type})],title:n}).catch(function(){});});
       }
     }catch(_){}
-    // rangée automatiquement dans la bibliothèque de vidéos, sous le même nom
-    if(window.__vlibAdd){
-      window.__vlibAdd({name:fname,blob:blob,type:type,dur:total,kind:'clip'}).then(function(){
-        ui.msg.textContent+=' · rangée dans la bibliothèque vidéos sous « '+fname+' ».';
-      }).catch(function(){ui.msg.textContent+=' · (bibliothèque vidéos pleine ou indisponible : enregistre le fichier).';});
+    var saved=false;
+    function toLib(){
+      if(saved)return;
+      var n=fname(),nm=n.replace(/\.[^.]+$/,'');
+      ui.lib.disabled=true;
+      if(!window.__vlibAdd){ui.msg.textContent='Bibliothèque indisponible : utilise « Sur l\'appareil ».';ui.lib.disabled=false;return;}
+      window.__vlibAdd({name:n,blob:blob,type:type,dur:total,kind:'clip'}).then(function(){
+        saved=true;
+        done.push({s:a,e:b,name:nm});
+        seq={s:null,e:null,name:''};save();render();
+        ui.title.textContent='Enregistrée dans la bibliothèque';
+        ui.msg.textContent='« '+n+' » est dans la vidéothèque. Tu peux poser le début de la séquence suivante.';
+        ui.nmBox.hidden=true;ui.lib.hidden=true;ui.close.textContent='Fermer';
+        toast('« '+nm+' » enregistrée dans la vidéothèque. Séquence suivante : « Début ».');
+      }).catch(function(){ui.lib.disabled=false;ui.msg.textContent='Bibliothèque pleine ou indisponible : enregistre le fichier « Sur l\'appareil ».';});
     }
-  }
-  function exportAll(){
-    var nm=safeName(finalName)||(safeName(($('#vidName').textContent||'video').replace(/\.[^.]+$/,''))+'-decoupe');
-    if(!zones.length){toast('Pose d\'abord au moins une zone.');return;}
-    var k=keptList();if(!k.length){toast('Tout serait coupé : retire une zone ou passe en mode « Garder ».');return;}
-    exportRanges(k,nm,'« '+nm+' »');
+    ui.lib.addEventListener('click',toLib);
+    ui.inp.addEventListener('keydown',function(e){if(e.key==='Enter')toLib();});
   }
   /* ---- commandes ---- */
-  function setMode(m){cutMode=m;try{localStorage.setItem('cutmode',m);}catch(_){}render();}
   $('#cutStart').addEventListener('click',setStart);
   $('#cutEnd').addEventListener('click',setEnd);
-  $('#cutQ5').addEventListener('click',function(){quick(5);});
-  $('#cutQ10').addEventListener('click',function(){quick(10);});
+  $('#cutQ5').addEventListener('click',function(){endPlus(5);});
+  $('#cutQ10').addEventListener('click',function(){endPlus(10);});
+  $('#cutPlay').addEventListener('click',playSeq);
+  $('#cutGo').addEventListener('click',cutSeq);
+  $('#cutClear').addEventListener('click',clearSeq);
+  $('#cutName').addEventListener('input',function(){seq.name=this.value;save();});
   $('#fsVMark').addEventListener('click',setStart);
   $('#fsVEnd').addEventListener('click',setEnd);
-  $('#fsVQ5').addEventListener('click',function(){quick(5);});
-  $('#fsVQ10').addEventListener('click',function(){quick(10);});
-  $('#cutGo').addEventListener('click',exportAll);
-  $('#fsVCut').addEventListener('click',exportAll);
-  $('#cutFinal').addEventListener('input',function(){finalName=this.value;save();});
-  $('#fsVMode').addEventListener('click',function(){setMode(cutMode==='keep'?'cut':'keep');toast(cutMode==='keep'?'Mode Garder : seules les zones sont conservées.':'Mode Supprimer : les zones sont retirées.');});
-  Array.prototype.forEach.call($('#cutModeSeg').querySelectorAll('button'),function(b){b.addEventListener('click',function(){setMode(b.getAttribute('data-m'));});});
-  var armT=0;
-  $('#cutClear').addEventListener('click',function(){
-    var b=this;
-    if(!zones.length&&pend==null)return;
-    if(b.getAttribute('data-armed')==='1'){zones=[];pend=null;save();render();b.removeAttribute('data-armed');b.textContent='Effacer les zones';clearTimeout(armT);return;}
-    b.setAttribute('data-armed','1');b.textContent='Confirmer l\'effacement';
-    armT=setTimeout(function(){b.removeAttribute('data-armed');b.textContent='Effacer les zones';},3000);
-  });
+  $('#fsVQ5').addEventListener('click',function(){endPlus(5);});
+  $('#fsVQ10').addEventListener('click',function(){endPlus(10);});
+  $('#fsVCut').addEventListener('click',cutSeq);
   $('#cutTL').addEventListener('pointerdown',function(e){
     var d=D();if(!d)return;var r=$('#cutTLz').getBoundingClientRect();
-    v.pause();v.currentTime=Math.max(0,Math.min(d,(e.clientX-r.left)/r.width*d));
+    playS=false;v.pause();v.currentTime=Math.max(0,Math.min(d,(e.clientX-r.left)/r.width*d));
   });
   v.addEventListener('timeupdate',paintTL);v.addEventListener('seeked',paintTL);
-  document.addEventListener('vidloaded',function(){zones=[];pend=null;finalName='';render();});
-  v.addEventListener('loadedmetadata',restore);
-  v.addEventListener('durationchange',function(){paintMarks();paintTL();});
-  $('#vidClose').addEventListener('click',function(){zones=[];pend=null;prev=false;playZ=null;updPrev();render();});
+  document.addEventListener('vidloaded',function(){loadedKey='';seq={s:null,e:null,name:''};done=[];render();});
+  v.addEventListener('loadedmetadata',function(){restore(false);});
+  v.addEventListener('durationchange',function(){if(D())restore(false);paintMarks();paintTL();});
+  $('#vidClose').addEventListener('click',function(){loadedKey='';seq={s:null,e:null,name:''};done=[];playS=false;render();});
   window.addEventListener('resize',function(){setTimeout(function(){paintMarks();paintTL();},120);});
   if('ResizeObserver' in window){try{new ResizeObserver(function(){paintMarks();paintTL();}).observe($('#fsVScrub'));new ResizeObserver(paintTL).observe($('#cutTL'));}catch(_){}}
   render();
@@ -2206,11 +2185,10 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
         b('Renommer',function(x){
           var inp=document.createElement('input');inp.type='text';inp.className='zname';inp.value=r.name.replace(/\.[^.]+$/,'');inp.maxLength=60;
           var ext=(r.name.match(/\.[^.]+$/)||[''])[0];
-          nm.replaceWith(inp);inp.focus();inp.select();
-          var nx=x.cloneNode(true);x.replaceWith(nx);nx.textContent='OK';
+          nm.replaceWith(inp);inp.focus();inp.select();x.textContent='OK';
           var go=function(){var n=safeName(inp.value);if(!n){vRender();return;}
             vGet(r.id).then(function(rec){rec.name=n+ext;return tx('readwrite',function(s){s.put(rec);});}).then(vRender);};
-          nx.addEventListener('click',go);inp.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+          x.onclick=go;inp.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
         });
         var armed=0;
         b('Supprimer',function(x){
@@ -2245,6 +2223,7 @@ $('#fsLibClose').addEventListener('click',closeFsLib);
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(_){}
   vRender();
 })();
+
 
 /* hauteur de la barre */
 function setBarH(){var c=$('.fsctl');if(c&&fsOn)stageEl.style.setProperty('--fsbarh',c.offsetHeight+'px');}
