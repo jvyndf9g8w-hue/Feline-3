@@ -278,7 +278,7 @@ svg#board{display:block;width:100%;height:auto;max-height:88vh;touch-action:none
 .v3bar{display:none;position:absolute;z-index:4;left:10px;right:10px;margin-inline:auto;width:fit-content;bottom:10px;gap:6px;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 20px)}
 .stage.fs .v3bar{bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + var(--fsbarh,46px) + 14px)}
 .stage.fs.is3d .fsink:not([hidden]){bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + var(--fsbarh,46px) + 62px)}
-#ink3{display:none;position:absolute;inset:0;width:100%;height:100%;z-index:3;touch-action:none;pointer-events:none}
+#ink3{display:none;position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none;pointer-events:none}
 .stage.is3d.inking #ink3{display:block;pointer-events:auto}
 .stage.is3d .v3bar{display:flex}
 .v3bar .btn{min-height:34px;padding:0 10px;font-size:14px;background:rgba(10,15,22,.74);color:#fff;border-color:rgba(255,255,255,.25)}
@@ -1960,7 +1960,7 @@ inkCap.addEventListener('pointerup',inkEnd);
 inkCap.addEventListener('pointercancel',inkEnd);
 $('#fsPen').addEventListener('click',function(){
   if(!inkOn){if(fsEdit)endEdit();inkSet(true);return;}
-  if($('#fsInk').hidden){inkBar(true);return;}
+  if($('#fsInk').hidden&&!stage3.classList.contains('is3d')){inkBar(true);return;}
   inkSet(false);
 });
 $('#inkUndo').addEventListener('click',function(){if(stage3.classList.contains('is3d')){var q=ink3Stack.pop();if(q&&q.parentNode)q.parentNode.removeChild(q);return;}while(inkStack.length){var x=inkStack.pop();if(x.parentNode){x.parentNode.removeChild(x);break;}}});
